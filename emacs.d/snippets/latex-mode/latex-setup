@@ -1,0 +1,27 @@
+# -*- mode: snippet -*-
+# name: latex-setup
+# key: setup
+# --
+\documentclass[a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[swedish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{newcent} % Normal font
+\usepackage{helvet}  % For better sans serif font for cards
+\frenchspacing
+
+\usepackage{graphicx}
+
+\usepackage[pdftex, pdfborder={0 0 0}]{hyperref} % For hyperlinks. The pdftex option matches PDFLaTeX.
+
+\title{$1}
+\author{$2}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+$0
+
+\end{document}

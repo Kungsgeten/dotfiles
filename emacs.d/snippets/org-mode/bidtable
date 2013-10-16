@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: bidtable
+# key: bid
+# --
+#+BEGIN_LaTeX
+\begin{bidtable}
+$0
+\end{bidtable}
+#+END_LaTeX

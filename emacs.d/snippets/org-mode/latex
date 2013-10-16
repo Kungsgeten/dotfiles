@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: latexsetup
+# key: latex
+# --
+#+TITLE:$1
+#+AUTHOR:Erik Sjöstrand
+#+LaTeX_HEADER:\include{ebridge}
+#+LaTeX_HEADER:\usepackage[swedish]{babel}
+
+$0
