@@ -7,24 +7,29 @@
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
 
 (defvar my-packages '(ace-jump-mode
+                      anzu
                       auctex
                       auto-complete ac-nrepl
                       bookmark+
                       deft
                       dired+ dired-details+
+                      diminish
                       expand-region
                       flycheck
                       helm helm-spotify helm-descbinds helm-orgcard
                       key-chord
-                      lua-mode
+		      lua-mode
                       magit
                       multiple-cursors
                       clojure-mode clojure-cheatsheet
+                      smartparens
                       nrepl paredit slime rainbow-delimiters
+                      undo-tree
+                      volatile-highlights
                       yascroll
                       yasnippet
                       zenburn-theme
-                      zencoding-mode)
+                      zencoding-mode rainbow-mode)
   "List of packages to install at launch")
 
 
@@ -74,7 +79,6 @@ missing)
       kept-new-versions 9)
 (setq backup-directory-alist (quote ((".*" . "~/.emacs.d/backups/"))))
 
-
 ;; Personal info
 ;;;;;;;;;;;;;;;;
 
@@ -99,14 +103,28 @@ missing)
 (global-hl-line-mode +1)
 (pending-delete-mode 1)
 
+(require 'volatile-highlights)
+(volatile-highlights-mode t)
+(diminish 'volatile-highlights-mode)
+
 (scroll-bar-mode -1)
 (require 'yascroll)
 (global-yascroll-bar-mode 1)
+;; make the fringe (gutter) smaller
+;; the argument is a width in pixels (the default is 8)
+(if (fboundp 'fringe-mode)
+    (fringe-mode 4))
 
 (setq
  scroll-margin 5
  scroll-conservatively 100000
  scroll-preserve-screen-position 1)
+
+;; diminish keeps the modeline tidy
+(require 'diminish)
+
+(require 'anzu)
+(global-anzu-mode +1)
 
 (setq locale-coding-system 'utf-8)
 (set-terminal-coding-system 'utf-8)
@@ -117,15 +135,54 @@ missing)
 
 (global-set-key [remap goto-line] 'goto-line-with-feedback)
 
-;; = ido-mode
-(ido-mode t)
-(ido-everywhere t)
-(setq ido-enable-flex-matching t) ;; enable fuzzy matching
-(setq ido-execute-command-cache nil)
+(helm-mode t)
+(helm-descbinds-mode t)
+(diminish 'helm-mode)
 
+;; saveplace remembers your location in a file when saving files
+(require 'saveplace)
+(setq save-place-file (expand-file-name "saveplace" user-emacs-directory))
+;; activate it for all buffers
+(setq-default save-place t)
+
+;; savehist keeps track of some history
+(require 'savehist)
+(setq savehist-additional-variables
+      ;; search entries
+      '(search ring regexp-search-ring)
+      ;; save every minute
+      savehist-autosave-interval 60
+      ;; keep the home clean
+      savehist-file (expand-file-name "savehist" user-emacs-directory))
+(savehist-mode +1)
+
+;; save recent files
+(require 'recentf)
+(setq recentf-save-file (expand-file-name "recentf" user-emacs-directory)
+      recentf-max-saved-items 500
+      recentf-max-menu-items 15)
+(recentf-mode +1)
+
+(global-auto-revert-mode t)
+
+;; sensible undo
+(global-undo-tree-mode)
+(diminish 'undo-tree-mode)
+
+;; enable winner-mode to manage window configurations
+(winner-mode +1)
 
 ;; Text editiing
 ;;;;;;;;;;;;;;;;
+
+; enable narrowing commands
+(put 'narrow-to-region 'disabled nil)
+(put 'narrow-to-page 'disabled nil)
+(put 'narrow-to-defun 'disabled nil)
+
+;; enabled change region case commands
+(put 'upcase-region 'disabled nil)
+(put 'downcase-region 'disabled nil)
 
 ;; = smart open and line, join line and line beginning
 
@@ -158,6 +215,7 @@ missing)
 (global-set-key "\C-a" 'smart-line-beginning)
 ;; ==
 
+(require 'expand-region)
 (global-set-key (kbd "C-=") 'er/expand-region)
 
 ;; = Increment/decrement integer
@@ -354,16 +412,104 @@ missing)
 (add-hook 'LaTeX-mode-hook 'flyspell-buffer)
 (setq reftex-plug-into-AUCTeX t)
 
+(require 'smartparens-latex)
+
+;; Programming
+;;;;;;;;;;;;;;
+
+;; make a shell script executable automatically on save
+(add-hook 'after-save-hook
+          'executable-make-buffer-file-executable-if-script-p)
+
+(add-to-list 'auto-mode-alist '("\\.zsh\\'" . shell-script-mode))
+
+;; saner regex syntax
+(require 're-builder)
+(setq reb-re-syntax 'string)
+
+
+(defun prelude-font-lock-comment-annotations ()
+  "Highlight a bunch of well known comment annotations.
+
+This functions should be added to the hooks of major modes for programming."
+  (font-lock-add-keywords
+   nil '(("\\<\\(\\(FIX\\(ME\\)?\\|TODO\\|OPTIMIZE\\|HACK\\|REFACTOR\\):\\)"
+          1 font-lock-warning-face t))))
+
+(defun prelude-local-comment-auto-fill ()
+  (set (make-local-variable 'comment-auto-fill-only-comments) t))
+
+(defun prelude-prog-mode-defaults ()
+  "Default coding hook, useful with any programming language."
+  (smartparens-mode +1)
+  (prelude-local-comment-auto-fill)
+  (prelude-font-lock-comment-annotations))
+
+(setq prelude-prog-mode-hook 'prelude-prog-mode-defaults)
+
+(require 'which-func)
+(add-to-list 'which-func-modes 'ruby-mode)
+(which-function-mode 1)
+
+(add-hook 'prog-mode-hook (lambda ()
+                            (run-hooks 'prelude-prog-mode-hook)))
+
+;; CSS
+;;;;;;
+
+(add-hook 'css-mode-hook (lambda () (rainbow-mode +1)))
+(eval-after-load 'css-mode (setq css-indent-offset 2))
+
 ;; LISP
 ;;;;;;;
 
-(add-hook 'lisp-mode-hook (lambda () (slime-mode t)))
-(add-hook 'lisp-mode-hook (lambda () (paredit-mode t)))
-(add-hook 'inferior-lisp-mode-hook (lambda () (inferior-slime-mode t)))
-(setq inferior-lisp-program "/usr/bin/clisp") ; your Lisp system
+;; Lisp configuration
+(define-key read-expression-map (kbd "TAB") 'lisp-complete-symbol)
 
-(add-hook 'emacs-lisp-mode-hook (lambda () (paredit-mode t)))
-(add-hook 'slime-repl-mode-hook (lambda () (paredit-mode t)))
+;; a great lisp coding hook
+(defun prelude-lisp-coding-defaults ()
+  (paredit-mode t)
+  (rainbow-delimiters-mode +1))
+
+(setq prelude-lisp-coding-hook 'prelude-lisp-coding-defaults)
+
+(defun prelude-interactive-lisp-coding-defaults ()
+  (paredit-mode t)
+  (rainbow-delimiters-mode +1))
+
+(setq prelude-interactive-lisp-coding-hook 'prelude-interactive-lisp-coding-defaults)
+
+
+(setq slime-lisp-implementations
+      '((ccl ("ccl"))
+        (clisp ("clisp" "-q"))
+        (cmucl ("cmucl" "-quiet"))
+        (sbcl ("sbcl" "--noinform") :coding-system utf-8-unix)))
+
+(setq slime-default-lisp 'clisp)
+
+(add-hook 'lisp-mode-hook (lambda () (run-hooks 'prelude-lisp-coding-hook)))
+(add-hook 'emacs-lisp-mode-hook (lambda () (run-hooks 'prelude-lisp-coding-hook)))
+(add-hook 'slime-repl-mode-hook (lambda () (run-hooks 'prelude-interactive-lisp-coding-hook)))
+
+(defun prelude-start-slime ()
+  "Start SLIME unless it's already running."
+  (unless (slime-connected-p)
+    (save-excursion (slime))))
+
+;; start slime automatically when we open a lisp file
+(add-hook 'slime-mode-hook 'prelude-start-slime)
+
+(eval-after-load "slime"
+  '(progn
+     (setq slime-complete-symbol-function 'slime-fuzzy-complete-symbol
+           slime-fuzzy-completion-in-place t
+           slime-enable-evaluate-in-emacs t
+           slime-autodoc-use-multiline-p t)
+
+     (define-key slime-mode-map (kbd "TAB") 'slime-indent-and-complete-symbol)
+     (define-key slime-mode-map (kbd "C-c i") 'slime-inspect)
+     (define-key slime-mode-map (kbd "C-c C-s") 'slime-selector)))
 
 ;; Dired and bookmarks
 ;;;;;;;;;;;;;;;;;;;;;;
@@ -371,6 +517,13 @@ missing)
 (setq bmkp-prompt-for-tags-flag 1)
 (bookmark-bmenu-list)
 (switch-to-buffer "*Bookmark List*")
+
+;; dired - reuse current buffer by pressing 'a'
+(put 'dired-find-alternate-file 'disabled nil)
+
+;; always delete and copy recursively
+(setq dired-recursive-deletes 'always)
+(setq dired-recursive-copies 'always)
 
 (require 'dired+)
 
@@ -426,6 +579,8 @@ missing)
 
 ;; Buffer manipulation
 ;;;;;;;;;;;;;;;;;;;;;;
+
+(global-set-key (kbd "C-c SPC") 'ace-jump-mode)
 
 (defun djcb-find-file-as-root ()
   "Like `ido-find-file, but automatically edit the file with
@@ -526,9 +681,10 @@ missing)
 
 (require 'key-chord)
 
-(key-chord-define-global "BB" 'ido-switch-buffer)
-(key-chord-define-global "FF" 'find-file)
-(key-chord-define-global "jk" 'beginning-of-buffer)
+(key-chord-define-global "jj" 'ace-jump-word-mode)
+(key-chord-define-global "jl" 'ace-jump-line-mode)
+(key-chord-define-global "jk" 'ace-jump-char-mode)
+(key-chord-define-global "uu" 'undo-tree-visualize)
 
 (key-chord-mode +1)
 
