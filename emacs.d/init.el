@@ -23,7 +23,7 @@
                       multiple-cursors
                       clojure-mode clojure-cheatsheet
                       smartparens
-                      nrepl paredit slime rainbow-delimiters
+                      nrepl slime rainbow-delimiters
                       undo-tree
                       volatile-highlights
                       yascroll
@@ -125,6 +125,7 @@ missing)
 
 (require 'anzu)
 (global-anzu-mode +1)
+(diminish 'anzu-mode)
 
 (setq locale-coding-system 'utf-8)
 (set-terminal-coding-system 'utf-8)
@@ -298,7 +299,6 @@ missing)
            (insert (current-kill 0)))))
 (global-set-key (kbd "C-c e") 'eval-and-replace)
 
-(electric-pair-mode +1)
 (global-set-key(kbd"RET")'newline-and-indent)
 
 (defun kill-region-or-backward-word ()
@@ -412,10 +412,10 @@ missing)
 (add-hook 'LaTeX-mode-hook 'flyspell-buffer)
 (setq reftex-plug-into-AUCTeX t)
 
-(require 'smartparens-latex)
-
 ;; Programming
 ;;;;;;;;;;;;;;
+
+(require 'smartparens-config)
 
 ;; make a shell script executable automatically on save
 (add-hook 'after-save-hook
@@ -468,13 +468,13 @@ This functions should be added to the hooks of major modes for programming."
 
 ;; a great lisp coding hook
 (defun prelude-lisp-coding-defaults ()
-  (paredit-mode t)
+  (smartparens-mode t)
   (rainbow-delimiters-mode +1))
 
 (setq prelude-lisp-coding-hook 'prelude-lisp-coding-defaults)
 
 (defun prelude-interactive-lisp-coding-defaults ()
-  (paredit-mode t)
+  (smartparens-mode t)
   (rainbow-delimiters-mode +1))
 
 (setq prelude-interactive-lisp-coding-hook 'prelude-interactive-lisp-coding-defaults)
