@@ -9,7 +9,7 @@
 (defvar my-packages '(ace-jump-mode
                       anzu
                       auctex
-                      auto-complete ac-nrepl
+                      auto-complete
                       bookmark+
                       deft
                       dired+ dired-details+
@@ -21,9 +21,8 @@
 		      lua-mode
                       magit
                       multiple-cursors
-                      clojure-mode clojure-cheatsheet
                       smartparens
-                      nrepl slime rainbow-delimiters
+                      slime rainbow-delimiters
                       undo-tree
                       volatile-highlights
                       yascroll
@@ -32,6 +31,8 @@
                       zencoding-mode rainbow-mode)
   "List of packages to install at launch")
 
+(if system-type 'gnu/linux
+  (setq my-packages (append my-packages '(ac-nrepl nrepl clojure-mode clojure-cheatsheet))))
 
 (defun my-missing-packages ()
   (let (missing-packages)
@@ -61,7 +62,8 @@ missing)
 ;;;;;;;;;;;;;;;;;;;;;;;
 
 (setq frame-title-format '("emacs"))
-(set-frame-font "Terminus-10")
+(if system-type 'gnu/linux
+  (set-frame-font "Terminus-10"))
 
 (let ((default-directory "~/.emacs.d/plugins/"))
   (normal-top-level-add-to-load-path '("" "ledger")))
