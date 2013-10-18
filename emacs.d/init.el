@@ -456,6 +456,13 @@ This functions should be added to the hooks of major modes for programming."
 (add-hook 'prog-mode-hook (lambda ()
                             (run-hooks 'prelude-prog-mode-hook)))
 
+;; AutoHotKey
+;;;;;;;;;;;;;
+
+(autoload 'xahk-mode "xahk-mode" "Load xahk-mode for editing AutoHotkey scripts." t)
+(add-to-list 'auto-mode-alist '("\\.ahk\\'" . xahk-mode))
+(defalias 'ahk-mode 'xahk-mode) ; make it easier to remember.
+
 ;; CSS
 ;;;;;;
 
@@ -685,7 +692,7 @@ This functions should be added to the hooks of major modes for programming."
 
 (key-chord-define-global "jj" 'ace-jump-word-mode)
 (key-chord-define-global "jl" 'ace-jump-line-mode)
-(key-chord-define-global "jk" 'ace-jump-char-mode)
+(key-chord-define-global "jp" 'ace-jump-char-mode)
 (key-chord-define-global "uu" 'undo-tree-visualize)
 
 (key-chord-mode +1)
@@ -699,8 +706,9 @@ This functions should be added to the hooks of major modes for programming."
 ;; The WWW
 ;;;;;;;;;;
 
-(setq browse-url-browser-function 'browse-url-generic
-      browse-url-generic-program "/home/ess/bin/conkeror.sh")
+(if (string-equal system-type "gnu/linux") 
+    (setq browse-url-browser-function 'browse-url-generic
+          browse-url-generic-program "/home/ess/bin/conkeror.sh"))
 
-(global-set-key (kbd "C-c u") 'browse-url-generic)
+(global-set-key (kbd "C-c u") 'browse-url)
 
