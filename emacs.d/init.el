@@ -219,7 +219,9 @@ missing)
 ;; ==
 
 (require 'expand-region)
-(global-set-key (kbd "C-=") 'er/expand-region)
+(global-set-key (kbd "C-0") 'er/expand-region)
+(global-set-key (kbd "C-9") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-8") 'mc/mark-all-like-this)
 
 ;; = Increment/decrement integer
 
@@ -712,3 +714,7 @@ This functions should be added to the hooks of major modes for programming."
 
 (global-set-key (kbd "C-c u") 'browse-url)
 
+;; Misc
+;;;;;;;
+
+(require 'steam)
