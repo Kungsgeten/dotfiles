@@ -1,11 +1,14 @@
 (require 'url)
 (require 'xml)
+(require 'cl)
 
 (defvar steam-games nil)
+(defvar steam-username nil)
 
 (defun steam-get-xml ()
   (with-current-buffer
-      (url-retrieve-synchronously "http://steamcommunity.com/id/clerik/games?tab=all&xml=1")
+      (url-retrieve-synchronously (format "http://steamcommunity.com/id/%s/games?tab=all&xml=1"
+                                          steam-username))
     (goto-char url-http-end-of-headers)
     (car (xml-get-children (car (xml-parse-region (point) (point-max)))
                            'games))))
@@ -22,12 +25,12 @@
                                   'game))))
 
 (defun steam-launch-id (id)
-  (cond ((equal system-type 'windows-nt)
-         (shell-command (concat "explorer steam://rungameid/" id)))
-        ((equal system-type 'gnu/linux)
-         (shell-command (concat "steam steam://rungameid/" id)))))
+  (case system-type
+    ('windows-nt (shell-command (concat "explorer steam://rungameid/" id)))
+    ('gnu/linux (shell-command (concat "steam steam://rungameid/" id)))
+    ('darwin (shell-command (concat "open steam://rungameid/" id)))))
 
-(defun steam-export-org ()
+(defun steam-insert-org ()
   (interactive)
   (unless steam-games (steam-get-games))
   (mapcar (lambda (game)
@@ -42,7 +45,6 @@
                     (ido-completing-read
                      "Game: " steam-games)
                     steam-games))))
-    (if game
-        (steam-launch-id game))))
+    (when game (steam-launch-id game))))
 
 (provide 'steam)
