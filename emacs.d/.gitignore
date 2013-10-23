@@ -1,0 +1,14 @@
+elpa/
+backups/
+auto-save-list/
+image-dired/
+request/
+
+.smex-items
+.litable-lists.el
+savehist
+saveplace
+recentf
+orgcard.txt
+ac-comphist.dat
+.mc-lists.el
