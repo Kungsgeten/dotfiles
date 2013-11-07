@@ -1,0 +1,7 @@
+# InstaPaper
+bookmark-cmd "ricepaper.sh"
+
+# podbeuter
+download-path "~/mybook/music/podcasts"
+
+browser "conkeror.sh"
