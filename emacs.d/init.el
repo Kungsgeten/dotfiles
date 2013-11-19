@@ -373,7 +373,7 @@ When there is a text selection, act on the region."
 (setq org-directory "~/org/")
 (setq org-default-notes-file (concat org-directory "/notes.org"))
 (setq org-use-fast-todo-selection t)
-(setq org-mobile-directory "~/Dropbox/MobileOrg")
+(setq org-mobile-directory "~/Dropbox/Apps/MobileOrg")
 (setq org-mobile-inbox-for-pull "~/org/mobileorg.org")
 (setq org-mobile-files '("~/org/gtd.org"
                          "~/org/someday.org"))
