@@ -19,6 +19,7 @@
                       helm helm-spotify helm-descbinds helm-orgcard
                       key-chord
 		      lua-mode
+                      markdown-mode
                       magit
                       multiple-cursors
                       smex
@@ -388,6 +389,7 @@ When there is a text selection, act on the region."
 (setq org-refile-targets '(("gtd.org" :maxlevel . 1)))
 
 (find-file "~/org/gtd.org")
+(org-mobile-push)
 
 ;; = Shortcuts
 
