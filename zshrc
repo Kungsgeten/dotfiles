@@ -50,6 +50,9 @@ alias -g NF='*(.om[1])'
 alias mountphone='sudo mtpfs -o allow_other /media/android'
 alias umountphone='sudo umount /media/android'
 
+alias espgaluda='sdlmame espgal'
+alias teensy-ergo='teensy-loader-cli -mmcu=atmega32u4 -w -v'
+
 timer() { for ((i=$*;i>=0;i--));do echo -ne "\r$(date -d"0+$i sec" +%H:%M:%S)";sleep 1;done }
 
 upl-imgur() {
@@ -61,7 +64,7 @@ http://api.imgur.com/2/upload.xml | grep -Eo "<original>(.)*</original>" \
 multi-screens() {
     xrandr --output LVDS-0 --off
     xrandr --output DP-2 --mode 1920x1080
-    xrandr --output DP-1 --mode 1920x1080 --left-of DP-2
+    xrandr --output DP-1 --mode 1920x1080 --rotate left --left-of DP-2
     feh --bg-scale /home/ess/wallpapers/hedgehog.jpg
 }
 

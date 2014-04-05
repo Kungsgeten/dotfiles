@@ -19,4 +19,5 @@ python2 /home/ess/dropbox.py start &
 synclient TapButton2=2 &
 synclient TapButton3=3 &
 xflux -l 58 -g 14 &
+# exec /home/ess/clfswm-1212/clfswm
 exec i3
