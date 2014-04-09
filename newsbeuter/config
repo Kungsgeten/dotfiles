@@ -1,4 +1,8 @@
-# InstaPaper
+urls-source "oldreader"
+oldreader-login "sjostrand.erik@gmail.com"
+oldreader-password "QrdJwBnCO2"
+
+#InstaPaper
 bookmark-cmd "ricepaper.sh"
 
 # podbeuter
