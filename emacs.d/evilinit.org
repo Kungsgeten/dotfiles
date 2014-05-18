@@ -797,14 +797,14 @@ When there is a text selection, act on the region."
                     (lambda ()
                       (interactive)
                       (join-line -1)))
-    
+
     (global-set-key (kbd "C-c e") 'eval-and-replace)
-    
+
     (require 'expand-region)
     (global-set-key (kbd "C-0") 'er/expand-region)
     (global-set-key (kbd "C-9") 'mc/mark-next-like-this)
     (global-set-key (kbd "C-8") 'mc/mark-all-like-this)
-    
+
     (global-set-key (kbd "M-x") 'smex)
     (global-set-key (kbd "M-X") 'smex-major-mode-commands)
     (global-set-key "\M-n" 'next-user-buffer)
@@ -820,7 +820,8 @@ When there is a text selection, act on the region."
     ;; f10 = menu
     ;; f12 = console (i3)
 
-    (global-set-key [f5] (lambda () (interactive) (switch-to-buffer "gtd.txt")))
+    (global-set-key [f5] (lambda () (interactive) (find-file "~/org/deft/gtd.txt")))
+    (global-set-key [f6] 'magit-status)
     (global-set-key [f7] 'other-window)
     (global-set-key [f9] 'deft)
     ;; (global-set-key (kbd "½") "~")
