@@ -3,43 +3,46 @@
   #+begin_src emacs-lisp
     (require 'package)
     (package-initialize)
-    
+
     (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
-    
+
     (defvar my-packages '(ace-jump-mode
                           anzu
                           auctex
-                          auto-complete
                           bookmark+
+                          company
                           deft
                           dired+ dired-details+
                           diminish
                           expand-region
                           flycheck
+                          htmlize
                           key-chord
                           lua-mode
                           markdown-mode
                           magit
                           multiple-cursors
+                          ox-reveal
                           smex
                           smartparens
                           slime rainbow-delimiters
                           undo-tree
+                          web-mode
                           yascroll
                           yasnippet
                           zenburn-theme
                           zencoding-mode rainbow-mode)
       "List of packages to install at launch")
-    
+
     (if system-type 'gnu/linux
       (setq my-packages (append my-packages '(ac-nrepl nrepl clojure-mode clojure-cheatsheet))))
-    
+
     (defun my-missing-packages ()
       (let (missing-packages)
         (dolist (package my-packages (reverse missing-packages))
           (or (package-installed-p package)
     (push package missing-packages)))))
-    
+
     (defun ensure-my-packages ()
       (let ((missing (my-missing-packages)))
         (when missing
@@ -54,10 +57,8 @@
           (let ((compile-window (get-buffer-window "*Compile-Log*")))
     (if compile-window
     (delete-window compile-window))))))
-    
+
     (ensure-my-packages)
-    
-    
   #+end_src
 
 * Emacs init
@@ -389,8 +390,6 @@ When there is a text selection, act on the region."
 
   #+begin_src emacs-lisp
     (require 'org-install)
-    (require 'org-habit)
-    (require 'org-protocol)
     
     (setq org-entities-user '(("space" "\\ " nil " " " " " " " ")))
     
@@ -403,8 +402,8 @@ When there is a text selection, act on the region."
     (setq org-use-fast-todo-selection t)
     (setq org-mobile-directory "~/Dropbox/Apps/MobileOrg")
     (setq org-mobile-inbox-for-pull "~/org/mobileorg.org")
-    (setq org-mobile-files '("~/org/gtd.org"
-                             "~/org/someday.org"))
+    ;; (setq org-mobile-files '("~/org/gtd.org"
+    ;;                         "~/org/someday.org"))
     (setq org-mobile-force-id-on-agenda-items nil)
     
     (add-hook 'org-shiftup-final-hook 'windmove-up)
@@ -412,11 +411,11 @@ When there is a text selection, act on the region."
     (add-hook 'org-shiftdown-final-hook 'windmove-down)
     (add-hook 'org-shiftright-final-hook 'windmove-right)
     
-    (setq org-agenda-files '("~/org/gtd.org"))
-    (setq org-refile-targets '(("gtd.org" :maxlevel . 1)))
+    ;; (setq org-agenda-files '("~/org/gtd.org"))
+    ;; (setq org-refile-targets '(("gtd.org" :maxlevel . 1)))
     
-    (find-file "~/org/gtd.org")
-    (org-mobile-push)
+    (find-file "~/org/deft/gtd.txt")
+    ;; (org-mobile-push)
     
     ;; = Shortcuts
     
@@ -429,12 +428,8 @@ When there is a text selection, act on the region."
     
     (setq org-capture-templates
           '(
-            ("t" "Todo" entry (file+headline "~/org/gtd.org" "Tasks")
+            ("i" "Inbox" entry (file+headline "~/org/deft/gtd.txt" "Inbox")
              "* TODO %? %^g \n  %i\n  %a \n Added: %u\n\n")
-            ("s" "Someday" entry (file+headline "~/org/someday.org" "Inbox")
-             "* TODO %? %^g \n  %i\n  %a \n Added: %u\n\n")
-            ("i" "Inbox" entry (file+headline "~/org/gtd.org" "Inbox")
-             "* %?\n %a \n Added: %u\n\n  %i")
             ("b" "Bookmark" entry (file "~/org/bookmarks.org")
              "* [[%:link][%^{Title|%:description}]]   %^g \n  %?\n  Added: %u\n\n  %i"
              :empty-lines 1)
@@ -817,5 +812,16 @@ When there is a text selection, act on the region."
     (global-set-key (kbd "<C-prior>") 'previous-emacs-buffer) ; Ctrl+Shift+PageUp
     (global-set-key (kbd "<C-next>") 'next-emacs-buffer) ; Ctrl+Shift+PageDown
     (global-set-key (kbd "C-c u") 'browse-url)
-    (global-set-key (kbd "½") "~")
+
+    ;; f1 = help
+    ;; f2 = ??
+    ;; f3 = Record macro
+    ;; f4 = End or call macro
+    ;; f10 = menu
+    ;; f12 = console (i3)
+
+    (global-set-key [f5] (lambda () (interactive) (switch-to-buffer "gtd.txt")))
+    (global-set-key [f7] 'other-window)
+    (global-set-key [f9] 'deft)
+    ;; (global-set-key (kbd "½") "~")
   #+end_src

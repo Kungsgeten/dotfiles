@@ -61,16 +61,22 @@ http://api.imgur.com/2/upload.xml | grep -Eo "<original>(.)*</original>" \
 | grep -Eo "http://i.imgur.com/[^<]*"
 }
 
-multi-screens() {
+monitor-multi() {
     xrandr --output LVDS-0 --off
     xrandr --output DP-2 --mode 1920x1080
     xrandr --output DP-1 --mode 1920x1080 --rotate left --left-of DP-2
     feh --bg-scale /home/ess/wallpapers/hedgehog.jpg
 }
 
-single-screen() {
+monitor-laptop() {
     xrandr --output DP-2 --off
     xrandr --output LVDS-0 --mode 1600x900
     xrandr --output DP-1 --off
+    feh --bg-scale /home/ess/wallpapers/hedgehog.jpg
+}
+
+monitor-desktop() {
+    xrandr --output LVDS-0 --off
+    xrandr --output DP-2 --mode 1920x1080
     feh --bg-scale /home/ess/wallpapers/hedgehog.jpg
 }

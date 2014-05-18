@@ -1,3 +1,5 @@
+(package-initialize)
+(setq package-enable-at-startup nil)
 (require 'org-install)
 (require 'ob-tangle)
 
