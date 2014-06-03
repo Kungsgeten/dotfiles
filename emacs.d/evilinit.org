@@ -10,7 +10,6 @@
                           anzu
                           auctex
                           bookmark+
-                          company
                           deft
                           dired+ dired-details+
                           diminish
@@ -153,6 +152,15 @@
   ;; sensible undo
   (global-undo-tree-mode)
   (diminish 'undo-tree-mode)  
+  #+end_src
+
+  Some general functions:
+
+  #+begin_src emacs-lisp
+    (defun ess/new-leftframe ()
+      "Creates a new frame with fontsize suitable for the left screen"
+      (interactive)
+      (set-frame-font "Terminus-18" nil (list (make-frame))))
   #+end_src
 
 ** History and save files
@@ -390,53 +398,67 @@ When there is a text selection, act on the region."
 
   #+begin_src emacs-lisp
     (require 'org-install)
-    
+
     (setq org-entities-user '(("space" "\\ " nil " " " " " " " ")))
-    
+
     (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+    (add-to-list 'auto-mode-alist '("\\.txt$" . org-mode))
     (setq org-completion-use-ido t)
     (add-hook 'org-mode-hook 'turn-on-visual-line-mode)
-    
+
     (setq org-directory "~/org/")
-    (setq org-default-notes-file (concat org-directory "/notes.org"))
+    (setq org-default-notes-file (concat org-directory "/notes.txt"))
     (setq org-use-fast-todo-selection t)
+    (setq org-startup-with-inline-images t)
     (setq org-mobile-directory "~/Dropbox/Apps/MobileOrg")
     (setq org-mobile-inbox-for-pull "~/org/mobileorg.org")
-    ;; (setq org-mobile-files '("~/org/gtd.org"
-    ;;                         "~/org/someday.org"))
+    (setq org-mobile-files '("~/org/gtd.txt"
+                             "~/org/someday.txt"
+                             "~/org/notes.txt"
+                             "~/org/calendar.txt"))
     (setq org-mobile-force-id-on-agenda-items nil)
-    
+
     (add-hook 'org-shiftup-final-hook 'windmove-up)
     (add-hook 'org-shiftleft-final-hook 'windmove-left)
     (add-hook 'org-shiftdown-final-hook 'windmove-down)
     (add-hook 'org-shiftright-final-hook 'windmove-right)
-    
-    ;; (setq org-agenda-files '("~/org/gtd.org"))
-    ;; (setq org-refile-targets '(("gtd.org" :maxlevel . 1)))
-    
-    (find-file "~/org/deft/gtd.txt")
+
+
+
+    (setq org-agenda-files '("~/org/gtd.txt"
+                             "~/org/notes.txt"
+                             "~/org/calendar.txt"))
+
+    (find-file "~/org/gtd.txt")
+    (find-file "~/org/notes.txt")
     ;; (org-mobile-push)
-    
+
+    ;; = Apps
+
+    (delete '("\\.pdf\\'" . default) org-file-apps)
+    (add-to-list 'org-file-apps '("\\.pdf$" . "zathura \"%s\""))
+    (add-to-list 'org-file-apps '("\\.pdf::\\([0-9]+\\)\\'" . "zathura \"%s\" -P %1"))
+
     ;; = Shortcuts
-    
+
     (define-key global-map "\C-cl" 'org-store-link)
     (define-key global-map "\C-cc" 'org-capture)
     (define-key global-map "\C-ca" 'org-agenda)
     (define-key global-map "\C-cb" 'org-iswitchb)
-    
+
     ;; = Capture
-    
+
     (setq org-capture-templates
           '(
-            ("i" "Inbox" entry (file+headline "~/org/deft/gtd.txt" "Inbox")
+            ("t" "Todo" entry (file+headline "~/org/gtd.txt" "Inbox")
              "* TODO %? %^g \n  %i\n  %a \n Added: %u\n\n")
             ("b" "Bookmark" entry (file "~/org/bookmarks.org")
              "* [[%:link][%^{Title|%:description}]]   %^g \n  %?\n  Added: %u\n\n  %i"
              :empty-lines 1)
             ))
-    
+
     ;; = TODO tags
-    
+
     (setq org-agenda-custom-commands
           '(("h" "Todo lists"
              ((agenda)
@@ -450,14 +472,14 @@ When there is a text selection, act on the region."
               (tags-todo "BORÅS")
               (tags-todo "PHONE")
               (tags-todo "GÖTEBORG")))))
-    
+
     ;; Deft
     ;;;;;;;
-    
+
     (setq deft-extension "txt")
     (setq deft-text-mode 'org-mode)
     (global-set-key [f9] 'deft)
-    (setq deft-directory "~/org/deft")
+    (setq deft-directory org-directory)
     (setq deft-use-filename-as-title t)
   #+end_src
 
@@ -531,13 +553,21 @@ When there is a text selection, act on the region."
      (defalias 'ahk-mode 'xahk-mode) ; make it easier to remember.
    #+end_src
 
-** CSS
+** Web Development
+
+   #+begin_src emacs-lisp
+     (add-to-list 'auto-mode-alist '("\\.php$" . web-mode))
+     (add-to-list 'auto-mode-alist '("\\.htm$" . web-mode))
+     (add-to-list 'auto-mode-alist '("\\.html$" . web-mode))
+   #+end_src
+
+*** CSS
 
    #+begin_src emacs-lisp
      (add-hook 'css-mode-hook (lambda () (rainbow-mode +1)))
      (eval-after-load 'css-mode (setq css-indent-offset 2))
    #+end_src
-
+eb 
 * Dired and bookmarks
 
   #+begin_src emacs-lisp
@@ -820,7 +850,7 @@ When there is a text selection, act on the region."
     ;; f10 = menu
     ;; f12 = console (i3)
 
-    (global-set-key [f5] (lambda () (interactive) (find-file "~/org/deft/gtd.txt")))
+    (global-set-key [f5] (lambda () (interactive) (find-file "~/org/gtd.txt")))
     (global-set-key [f6] 'magit-status)
     (global-set-key [f7] 'other-window)
     (global-set-key [f9] 'deft)
