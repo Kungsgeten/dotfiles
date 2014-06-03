@@ -401,9 +401,12 @@ When there is a text selection, act on the region."
 
     (setq org-entities-user '(("space" "\\ " nil " " " " " " " ")))
 
+
+
     (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
     (add-to-list 'auto-mode-alist '("\\.txt$" . org-mode))
     (setq org-completion-use-ido t)
+    (setq org-outline-path-complete-in-steps nil)
     (add-hook 'org-mode-hook 'turn-on-visual-line-mode)
 
     (setq org-directory "~/org/")
@@ -423,7 +426,9 @@ When there is a text selection, act on the region."
     (add-hook 'org-shiftdown-final-hook 'windmove-down)
     (add-hook 'org-shiftright-final-hook 'windmove-right)
 
-
+    ;; So we can use "*bold*" and '*bold*'
+    (setq org-emphasis-regexp-components
+            '(" \t('\"{" "- \t.,:!?;'\")}\\" " \t\r\n," "." 1))
 
     (setq org-agenda-files '("~/org/gtd.txt"
                              "~/org/notes.txt"
@@ -446,16 +451,24 @@ When there is a text selection, act on the region."
     (define-key global-map "\C-ca" 'org-agenda)
     (define-key global-map "\C-cb" 'org-iswitchb)
 
-    ;; = Capture
+    ;; = Capture and refile
 
     (setq org-capture-templates
           '(
             ("t" "Todo" entry (file+headline "~/org/gtd.txt" "Inbox")
-             "* TODO %? %^g \n  %i\n  %a \n Added: %u\n\n")
+             "* TODO %? %^G \n  %i\n  %a \n Added: %u\n\n")
+            ("n" "Note" entry (file "~/org/notes.txt")
+             "* %? \n  Added: %u\n  %a \n\n  %i")
             ("b" "Bookmark" entry (file "~/org/bookmarks.org")
              "* [[%:link][%^{Title|%:description}]]   %^g \n  %?\n  Added: %u\n\n  %i"
              :empty-lines 1)
             ))
+
+    (setq org-refile-targets
+          '(
+            (nil . (:level . 1))
+            (org-agenda-files . (:level . 1))
+          ))
 
     ;; = TODO tags
 
@@ -816,7 +829,7 @@ eb
     (evil-leader/set-key
       "f" 'find-file
       "b" 'switch-to-buffer
-      "k" 'kill-buffer)
+      "k" 'kill-this-buffer)
   #+end_src
 * Global shortcuts
 
