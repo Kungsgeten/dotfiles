@@ -428,7 +428,8 @@ When there is a text selection, act on the region."
 
     ;; So we can use "*bold*" and '*bold*'
     (setq org-emphasis-regexp-components
-            '(" \t('\"{" "- \t.,:!?;'\")}\\" " \t\r\n," "." 1))
+          '(" \t({" "- \t.,:!?;)}\\" " \t\r\n," "." 1))
+    (org-reload)
 
     (setq org-agenda-files '("~/org/gtd.txt"
                              "~/org/notes.txt"
