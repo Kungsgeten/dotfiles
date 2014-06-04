@@ -418,7 +418,8 @@ When there is a text selection, act on the region."
     (setq org-mobile-files '("~/org/gtd.txt"
                              "~/org/someday.txt"
                              "~/org/notes.txt"
-                             "~/org/calendar.txt"))
+                             "~/org/calendar.txt"
+                             "~/org/journal.txt"))
     (setq org-mobile-force-id-on-agenda-items nil)
 
     (add-hook 'org-shiftup-final-hook 'windmove-up)
@@ -433,7 +434,8 @@ When there is a text selection, act on the region."
 
     (setq org-agenda-files '("~/org/gtd.txt"
                              "~/org/notes.txt"
-                             "~/org/calendar.txt"))
+                             "~/org/calendar.txt"
+                             "~/org/journal.txt"))
 
     (find-file "~/org/gtd.txt")
     (find-file "~/org/notes.txt")
@@ -460,15 +462,22 @@ When there is a text selection, act on the region."
              "* TODO %? %^G \n  %i\n  %a \n Added: %u\n\n")
             ("n" "Note" entry (file "~/org/notes.txt")
              "* %? \n  Added: %u\n  %a \n\n  %i")
+            ("s" "Someday" entry (file+headline "~/org/someday.txt" "Someday")
+             "* %? \n  Added: %u\n  %a \n\n  %i")
+            ("m" "Maybe" entry (file+headline "~/org/someday.txt" "Maybe")
+             "* %? \n  Added: %u\n  %a \n\n  %i")
             ("b" "Bookmark" entry (file "~/org/bookmarks.org")
              "* [[%:link][%^{Title|%:description}]]   %^g \n  %?\n  Added: %u\n\n  %i"
              :empty-lines 1)
+            ("j" "Journal" entry (file+datetree "~/org/journal.txt")
+             "** %? \n\n   %i")
             ))
 
     (setq org-refile-targets
           '(
             (nil . (:level . 1))
             (org-agenda-files . (:level . 1))
+            ("~/org/someday.txt" . (:level . 1))
           ))
 
     ;; = TODO tags
