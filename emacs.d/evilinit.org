@@ -1,21 +1,43 @@
 * Install packages
 
+  Package list:
+
+  - ace-jump-mode :: Quick jump to words
+  - ace-window :: Quick jump to other windows
+  - anzu :: Show number of matches in modeline while searching
+  - diminish :: Don't show some minor modes in mode line
+  - evil :: Vim emulation
+  - evil-leader :: Have a key and then another to execute stuff
+  - expand-region :: Select logical units, then expand
+  - flycheck :: On the fly syntax checking
+  - htmlize :: Convert buffer to html
+  - smex :: Ido for M-x
+  - smartparens :: Like paredit
+  - rainbow-delimeters :: Make () and such different colors
+  - undo-tree :: Better undo
+  - yascroll :: Show scrollbar in fringe
+  - zencoding-mode :: Write html more easy
+  - rainbow-mode :: Show colors in buffer when writing e.g. #ffa3f2
+
+
   #+begin_src emacs-lisp
     (require 'package)
     (package-initialize)
 
     (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
 
-    (defvar my-packages '(ace-jump-mode
+    (defvar my-packages '(ace-jump-mode ace-window
                           anzu
                           auctex
                           bookmark+
                           deft
                           dired+ dired-details+
                           diminish
+                          evil evil-leader
                           expand-region
                           flycheck
                           htmlize
+                          ido-vertical-mode
                           key-chord
                           lua-mode
                           markdown-mode
@@ -815,13 +837,6 @@ eb
     (define-key evil-normal-state-map (kbd "k") 'evil-previous-visual-line)
   #+end_src
 
-  C-s to insert snippets
-
-  #+begin_src emacs-lisp
-    (define-key evil-normal-state-map (kbd "C-c s") 'yas-insert-snippet)
-    (define-key evil-insert-state-map (kbd "C-c s") 'yas-insert-snippet)
-  #+end_src
-
   Ace jump to word when pressing space
 
   #+begin_src emacs-lisp
@@ -865,6 +880,9 @@ eb
     (global-set-key (kbd "<C-prior>") 'previous-emacs-buffer) ; Ctrl+Shift+PageUp
     (global-set-key (kbd "<C-next>") 'next-emacs-buffer) ; Ctrl+Shift+PageDown
     (global-set-key (kbd "C-c u") 'browse-url)
+    (global-set-key (kbd "C-c s") 'yas-insert-snippet)
+    (global-set-key (kbd "C-x o") 'ace-window)
+    ;;   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 
     ;; f1 = help
     ;; f2 = ??
@@ -875,7 +893,7 @@ eb
 
     (global-set-key [f5] (lambda () (interactive) (find-file "~/org/gtd.txt")))
     (global-set-key [f6] 'magit-status)
-    (global-set-key [f7] 'other-window)
+    (global-set-key [f7] 'ace-window)
     (global-set-key [f9] 'deft)
     ;; (global-set-key (kbd "½") "~")
   #+end_src
