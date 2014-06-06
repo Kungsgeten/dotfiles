@@ -452,6 +452,10 @@ When there is a text selection, act on the region."
     ;; So we can use "*bold*" and '*bold*'
     (setq org-emphasis-regexp-components
           '(" \t({" "- \t.,:!?;)}\\" " \t\r\n," "." 1))
+
+    (setq org-todo-keywords
+          '((sequence "TODO(t)" "VERIFY(v)" "STARTED(s)" "|" "DONE(d!)" "DELEGATED(g!)" "CANCELLED(c!)")))
+
     (org-reload)
 
     (setq org-agenda-files '("~/org/gtd.txt"
@@ -882,7 +886,7 @@ eb
     (global-set-key (kbd "C-c u") 'browse-url)
     (global-set-key (kbd "C-c s") 'yas-insert-snippet)
     (global-set-key (kbd "C-x o") 'ace-window)
-    ;;   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+    (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 
     ;; f1 = help
     ;; f2 = ??
