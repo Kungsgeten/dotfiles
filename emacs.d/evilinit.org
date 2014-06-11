@@ -483,6 +483,7 @@ When there is a text selection, act on the region."
     ;; = Capture and refile
 
     (setq org-capture-templates
+
           '(
             ("t" "Todo" entry (file+headline "~/org/gtd.txt" "Inbox")
              "* TODO %? %^G \n  %i\n  %a \n Added: %u\n\n")
@@ -833,6 +834,7 @@ eb
   #+begin_src emacs-lisp
     (require 'key-chord)
     (key-chord-define evil-insert-state-map "jj" 'evil-normal-state)
+    (key-chord-define evil-insert-state-map "qe" (lambda () (interactive) (insert "é")))
     (key-chord-mode 1)
   #+end_src
 
