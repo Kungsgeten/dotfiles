@@ -420,16 +420,18 @@ When there is a text selection, act on the region."
 
   #+begin_src emacs-lisp
     (require 'org-install)
+    (require 'org-protocol)
 
     (setq org-entities-user '(("space" "\\ " nil " " " " " " " ")))
+    (add-hook 'org-mode-hook 'turn-on-visual-line-mode)
 
-
-
+    ;; Flie types Emacs should open in org-mode
     (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
     (add-to-list 'auto-mode-alist '("\\.txt$" . org-mode))
+    (add-to-list 'auto-mode-alist '("\\.bml$" . org-mode))
+
     (setq org-completion-use-ido t)
     (setq org-outline-path-complete-in-steps nil)
-    (add-hook 'org-mode-hook 'turn-on-visual-line-mode)
 
     (setq org-directory "~/org/")
     (setq org-default-notes-file (concat org-directory "/notes.txt"))
@@ -465,7 +467,6 @@ When there is a text selection, act on the region."
 
     (find-file "~/org/gtd.txt")
     (find-file "~/org/notes.txt")
-    ;; (org-mobile-push)
 
     ;; = Apps
 
@@ -493,7 +494,7 @@ When there is a text selection, act on the region."
              "* %? \n  Added: %u\n  %a \n\n  %i")
             ("m" "Maybe" entry (file+headline "~/org/someday.txt" "Maybe")
              "* %? \n  Added: %u\n  %a \n\n  %i")
-            ("b" "Bookmark" entry (file "~/org/bookmarks.org")
+            ("b" "Bookmark" entry (file "~/org/bookmarks.txt")
              "* [[%:link][%^{Title|%:description}]]   %^g \n  %?\n  Added: %u\n\n  %i"
              :empty-lines 1)
             ("j" "Journal" entry (file+datetree "~/org/journal.txt")
@@ -514,16 +515,16 @@ When there is a text selection, act on the region."
     (setq org-agenda-custom-commands
           '(("h" "Todo lists"
              ((agenda)
-              (tags-todo "SKÖVDE")
-              (tags-todo "HIS")
-              (tags-todo "TOWN")
-              (tags-todo "COMPUTER")
-              (tags-todo "WINDOWS")
-              (tags-todo "LINUX")
-              (tags-todo "READING")
-              (tags-todo "BORÅS")
-              (tags-todo "PHONE")
-              (tags-todo "GÖTEBORG")))))
+              (tags-todo "@home")
+              (tags-todo "@work")
+              (tags-todo "@town")
+              (tags-todo "@computer")
+              (tags-todo "@windows")
+              (tags-todo "@linux")
+              (tags-todo "@borås")
+              (tags-todo "@phone")
+              (tags-todo "@ipad")
+              (tags-todo "@göteborg")))))
 
     ;; Deft
     ;;;;;;;
