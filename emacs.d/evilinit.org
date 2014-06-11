@@ -497,6 +497,8 @@ When there is a text selection, act on the region."
              :empty-lines 1)
             ("j" "Journal" entry (file+datetree "~/org/journal.txt")
              "** %? \n\n   %i")
+            ("c" "Calendar" entry (file+datetree) "~/org/calendar.txt"
+             "** %? \n\n   %i")
             ))
 
     (setq org-refile-targets
