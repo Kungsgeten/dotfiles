@@ -11,12 +11,13 @@
   - expand-region :: Select logical units, then expand
   - flycheck :: On the fly syntax checking
   - htmlize :: Convert buffer to html
+  - jedi :: Completion for Python
   - smex :: Ido for M-x
   - smartparens :: Like paredit
   - rainbow-delimeters :: Make () and such different colors
   - undo-tree :: Better undo
   - yascroll :: Show scrollbar in fringe
-  - zencoding-mode :: Write html more easy
+  - emmet :: Write html more easy
   - rainbow-mode :: Show colors in buffer when writing e.g. #ffa3f2
 
 
@@ -36,6 +37,7 @@
                           evil evil-leader
                           expand-region
                           flycheck
+                          jedi
                           htmlize
                           ido-vertical-mode
                           key-chord
@@ -43,7 +45,10 @@
                           markdown-mode
                           magit
                           multiple-cursors
+                          openwith
                           ox-reveal
+                          pydoc-info
+                          solarized-theme
                           smex
                           smartparens
                           slime rainbow-delimiters
@@ -52,7 +57,7 @@
                           yascroll
                           yasnippet
                           zenburn-theme
-                          zencoding-mode rainbow-mode)
+                          emmet-mode rainbow-mode)
       "List of packages to install at launch")
 
     (if system-type 'gnu/linux
@@ -86,17 +91,18 @@
 
   #+begin_src emacs-lisp
     (setq frame-title-format '("emacs"))
+    (set-language-environment "English")
     (if system-type 'gnu/linux
       (set-frame-font "Terminus-10"))
-    
+
     (let ((default-directory "~/.emacs.d/plugins/"))
       (normal-top-level-add-to-load-path '("" "ledger")))
-    
+
     (load "ledger-mode")
-    
+
     (package-initialize)
-    (load-theme 'zenburn t)
-    
+    (load-theme 'solarized-darkn t)
+
     (setq make-backup-files t)
     (setq version-control t
           backup-by-copying t
@@ -620,71 +626,91 @@ When there is a text selection, act on the region."
      (add-hook 'css-mode-hook (lambda () (rainbow-mode +1)))
      (eval-after-load 'css-mode (setq css-indent-offset 2))
    #+end_src
-eb 
+
+** Python
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'python-mode-hook 'jedi:setup)
+  (setq jedi:complete-on-dot t)
+#+END_SRC
+   
 * Dired and bookmarks
 
   #+begin_src emacs-lisp
-    (setq bmkp-prompt-for-tags-flag 1)
-    (bookmark-bmenu-list)
-    (switch-to-buffer "*Bookmark List*")
-    
-    ;; dired - reuse current buffer by pressing 'a'
-    (put 'dired-find-alternate-file 'disabled nil)
-    
-    ;; always delete and copy recursively
-    (setq dired-recursive-deletes 'always)
-    (setq dired-recursive-copies 'always)
-    
-    (require 'dired+)
-    
-    ;; dired, better searching (filenames)
-    (setq dired-isearch-filenames t)
-    
-    (put 'dired-find-alternate-file 'disabled nil)
-    
-    (require 'dired-x)
-    (setq-default dired-omit-files-p t) ;; this is buffer-local variable
-    (setq dired-omit-files
-          (concat dired-omit-files "\\|^\\..+$")) ;; dot-files are omitted
-    
-    (setq dired-dwim-target t)
-    
-    (require 'dired-details)
-    (setq-default dired-details-hidden-string nil)
-    (dired-details-install)
-    
-    ;; Auto refresh buffers
-    (global-auto-revert-mode 1)
-    
-    ;; Also auto refresh dired, but be quiet about it
-    (setq global-auto-revert-non-file-buffers t)
-    (setq auto-revert-verbose nil)
-    
-    
-    (defun open-in-external-app ()
-      "Open the current file or dired marked files in external app."
-      (interactive)
-      (let ( doIt
-             (myFileList
-              (cond
-               ((string-equal major-mode "dired-mode") (dired-get-marked-files))
-               (t (list (buffer-file-name))) ) ) )
-        
-        (setq doIt (if (<= (length myFileList) 5)
-                       t
-                     (y-or-n-p "Open more than 5 files?") ) )
-        
-        (when doIt
-          (cond
-           ((string-equal system-type "windows-nt")
-            (mapc (lambda (fPath) (w32-shell-execute "open" (replace-regexp-in-string "/" "\\" fPath t t)) ) myFileList)
-            )
-           ((string-equal system-type "darwin")
-            (mapc (lambda (fPath) (shell-command (format "open \"%s\"" fPath)) )  myFileList) )
-           ((string-equal system-type "gnu/linux")
-            (mapc (lambda (fPath) (let ((process-connection-type nil)) (start-process "" nil "xdg-open" fPath)) ) myFileList) ) ) ) ) )
-    
-    (global-set-key (kbd "<C-return>") 'open-in-external-app)
+     (setq bmkp-prompt-for-tags-flag 1)
+     (bookmark-bmenu-list)
+     (switch-to-buffer "*Bookmark List*")
+     
+     ;; dired - reuse current buffer by pressing 'a'
+     (put 'dired-find-alternate-file 'disabled nil)
+     
+     ;; always delete and copy recursively
+     (setq dired-recursive-deletes 'always)
+     (setq dired-recursive-copies 'always)
+     
+     (require 'dired+)
+     
+     ;; dired, better searching (filenames)
+     (setq dired-isearch-filenames t)
+     
+     (put 'dired-find-alternate-file 'disabled nil)
+     
+     (require 'dired-x)
+     (setq-default dired-omit-files-p t) ;; this is buffer-local variable
+     (setq dired-omit-files
+           (concat dired-omit-files "\\|^\\..+$")) ;; dot-files are omitted
+     
+     (setq dired-dwim-target t)
+     
+     (require 'dired-details)
+     (setq-default dired-details-hidden-string nil)
+     (dired-details-install)
+     
+     ;; Auto refresh buffers
+     (global-auto-revert-mode 1)
+     
+     ;; Also auto refresh dired, but be quiet about it
+     (setq global-auto-revert-non-file-buffers t)
+     (setq auto-revert-verbose nil)
+          
+     (defun open-in-external-app ()
+       "Open the current file or dired marked files in external app."
+       (interactive)
+       (let ( doIt
+              (myFileList
+               (cond
+                ((string-equal major-mode "dired-mode") (dired-get-marked-files))
+                (t (list (buffer-file-name))) ) ) )
+         
+         (setq doIt (if (<= (length myFileList) 5)
+                        t
+                      (y-or-n-p "Open more than 5 files?") ) )
+         
+         (when doIt
+           (cond
+            ((string-equal system-type "windows-nt")
+             (mapc (lambda (fPath) (w32-shell-execute "open" (replace-regexp-in-string "/" "\\" fPath t t)) ) myFileList)
+             )
+            ((string-equal system-type "darwin")
+             (mapc (lambda (fPath) (shell-command (format "open \"%s\"" fPath)) )  myFileList) )
+            ((string-equal system-type "gnu/linux")
+             (mapc (lambda (fPath) (let ((process-connection-type nil)) (start-process "" nil "xdg-open" fPath)) ) myFileList) ) ) ) ) )
+
+    (if system-type 'gnu/linux
+      (progn
+        (require 'openwith)
+        (setq openwith-associations '(("\\.pdf\\'" "zathura" (file))))
+        (setq openwith-associations '(("\\.doc\\'" "libreoffice" (file))))
+        (setq openwith-associations '(("\\.docx\\'" "libreoffice" (file))))     
+        (setq openwith-associations '(("\\.odt\\'" "libreoffice" (file))))     
+        (openwith-mode t)))
+
+     
+     (global-set-key (kbd "<C-return>") 'open-in-external-app)
+
+    (eval-after-load "dired-aux"
+       '(add-to-list 'dired-compress-file-suffixes 
+                     '("\\.zip\\'" ".zip" "unzip")))
   #+end_src
 
 * Buffer manipulation
