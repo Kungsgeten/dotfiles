@@ -48,7 +48,6 @@
                           openwith
                           ox-reveal
                           pydoc-info
-                          solarized-theme
                           smex
                           smartparens
                           slime rainbow-delimiters
@@ -101,7 +100,7 @@
     (load "ledger-mode")
 
     (package-initialize)
-    (load-theme 'solarized-darkn t)
+    (load-theme 'zenburn t)
 
     (setq make-backup-files t)
     (setq version-control t
