@@ -26,6 +26,7 @@
     (package-initialize)
 
     (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
+    (add-to-list 'package-archives '("SC"   . "http://joseito.republika.pl/sunrise-commander/"))
 
     (defvar my-packages '(ace-jump-mode ace-window
                           anzu
@@ -51,6 +52,7 @@
                           smex
                           smartparens
                           slime rainbow-delimiters
+                          sunrise-commander
                           undo-tree
                           web-mode
                           yascroll
@@ -166,6 +168,8 @@
    scroll-margin 5
    scroll-conservatively 100000
    scroll-preserve-screen-position 1)
+
+  (setq sentence-end-double-space nil)
     
   (setq locale-coding-system 'utf-8)
   (set-terminal-coding-system 'utf-8)
@@ -918,6 +922,46 @@ When there is a text selection, act on the region."
     (global-set-key (kbd "C-x o") 'ace-window)
     (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 
+   ;; Use § as a leader key 
+   (global-unset-key (kbd "§"))
+   
+   (mapc
+    (lambda (keyscommand)
+      (global-set-key 
+       (kbd (concat "§ " (car keyscommand)))
+       (cdr keyscommand)))
+    '(
+      ("§" . (lambda () (interactive) (insert "§")))
+      ("0" . delete-window)
+      ("1" . delete-other-windows)
+      ("2" . split-window-below)
+      ("3" . split-window-right)
+      ("u" . undo-tree-visualize)
+      ("m" . magit-status)
+      ("<SPC>" . ace-jump-mode)
+      ("o" . ace-window)
+      ))
+   
+   (mapc
+    (lambda (keyscommand)
+      (key-chord-define evil-insert-state-map
+       (car keyscommand) (cdr keyscommand)))
+    '(
+      ("1j" . "!")
+      ("2j" . "\"")
+      ("3j" . "#")
+      ("4j" . "$")
+      ("5j" . "%")
+      ("6f" . "&")
+      ("7f" . "/")
+      ("8f" . "(")
+      ("9f" . ")")
+      ("0f" . "=)
+      ("+f" . "?")
+      ("-f" . "_")
+      (".f" . ":")
+      (",f" . ";")
+      ))
     ;; f1 = help
     ;; f2 = ??
     ;; f3 = Record macro
@@ -928,6 +972,7 @@ When there is a text selection, act on the region."
     (global-set-key [f5] (lambda () (interactive) (find-file "~/org/gtd.txt")))
     (global-set-key [f6] 'magit-status)
     (global-set-key [f7] 'ace-window)
+    (global-set-key [f8] 'sunrise)
     (global-set-key [f9] 'deft)
     ;; (global-set-key (kbd "½") "~")
   #+end_src
