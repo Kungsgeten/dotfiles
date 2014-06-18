@@ -899,80 +899,77 @@ When there is a text selection, act on the region."
   Here's the keys that are defined in all modes.
 
   #+begin_src emacs-lisp
-    (global-set-key (kbd "M-j")
-                    (lambda ()
-                      (interactive)
-                      (join-line -1)))
+     (global-set-key (kbd "M-j")
+                     (lambda ()
+                       (interactive)
+                       (join-line -1)))
 
-    (global-set-key (kbd "C-c e") 'eval-and-replace)
+     (global-set-key (kbd "C-c e") 'eval-and-replace)
 
-    (require 'expand-region)
-    (global-set-key (kbd "C-0") 'er/expand-region)
-    (global-set-key (kbd "C-9") 'mc/mark-next-like-this)
-    (global-set-key (kbd "C-8") 'mc/mark-all-like-this)
+     (require 'expand-region)
+     (global-set-key (kbd "C-0") 'er/expand-region)
+     (global-set-key (kbd "C-9") 'mc/mark-next-like-this)
+     (global-set-key (kbd "C-8") 'mc/mark-all-like-this)
 
-    (global-set-key (kbd "M-x") 'smex)
-    (global-set-key (kbd "M-X") 'smex-major-mode-commands)
-    (global-set-key "\M-n" 'next-user-buffer)
-    (global-set-key "\M-p" 'previous-user-buffer)
-    (global-set-key (kbd "<C-prior>") 'previous-emacs-buffer) ; Ctrl+Shift+PageUp
-    (global-set-key (kbd "<C-next>") 'next-emacs-buffer) ; Ctrl+Shift+PageDown
-    (global-set-key (kbd "C-c u") 'browse-url)
-    (global-set-key (kbd "C-c s") 'yas-insert-snippet)
-    (global-set-key (kbd "C-x o") 'ace-window)
-    (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+     (global-set-key (kbd "M-x") 'smex)
+     (global-set-key (kbd "M-X") 'smex-major-mode-commands)
+     (global-set-key "\M-n" 'next-user-buffer)
+     (global-set-key "\M-p" 'previous-user-buffer)
+     (global-set-key (kbd "<C-prior>") 'previous-emacs-buffer) ; Ctrl+Shift+PageUp
+     (global-set-key (kbd "<C-next>") 'next-emacs-buffer) ; Ctrl+Shift+PageDown
+     (global-set-key (kbd "C-c u") 'browse-url)
+     (global-set-key (kbd "C-c s") 'yas-insert-snippet)
+     (global-set-key (kbd "C-x o") 'ace-window)
+     (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 
-   ;; Use § as a leader key 
-   (global-unset-key (kbd "§"))
-   
-   (mapc
-    (lambda (keyscommand)
-      (global-set-key 
-       (kbd (concat "§ " (car keyscommand)))
-       (cdr keyscommand)))
-    '(
-      ("§" . (lambda () (interactive) (insert "§")))
-      ("0" . delete-window)
-      ("1" . delete-other-windows)
-      ("2" . split-window-below)
-      ("3" . split-window-right)
-      ("u" . undo-tree-visualize)
-      ("m" . magit-status)
-      ("<SPC>" . ace-jump-mode)
-      ("o" . ace-window)
-      ))
-   
-   (mapc
-    (lambda (keyscommand)
-      (key-chord-define evil-insert-state-map
-       (car keyscommand) (cdr keyscommand)))
-    '(
-      ("1j" . "!")
-      ("2j" . "\"")
-      ("3j" . "#")
-      ("4j" . "$")
-      ("5j" . "%")
-      ("6f" . "&")
-      ("7f" . "/")
-      ("8f" . "(")
-      ("9f" . ")")
-      ("0f" . "=)
-      ("+f" . "?")
-      ("-f" . "_")
-      (".f" . ":")
-      (",f" . ";")
-      ))
-    ;; f1 = help
-    ;; f2 = ??
-    ;; f3 = Record macro
-    ;; f4 = End or call macro
-    ;; f10 = menu
-    ;; f12 = console (i3)
+    ;; Use § as a leader key 
+    (global-unset-key (kbd "§"))
 
-    (global-set-key [f5] (lambda () (interactive) (find-file "~/org/gtd.txt")))
-    (global-set-key [f6] 'magit-status)
-    (global-set-key [f7] 'ace-window)
-    (global-set-key [f8] 'sunrise)
-    (global-set-key [f9] 'deft)
-    ;; (global-set-key (kbd "½") "~")
+    (mapc
+     (lambda (keyscommand)
+       (global-set-key 
+        (kbd (concat "§ " (car keyscommand)))
+        (cdr keyscommand)))
+     '(
+       ("§" . (lambda () (interactive) (insert "§")))
+       ("0" . delete-window)
+       ("1" . delete-other-windows)
+       ("2" . split-window-below)
+       ("3" . split-window-right)
+       ("u" . undo-tree-visualize)
+       ("m" . magit-status)
+       ("d" . deft)
+       ("s" . sunrise)
+       ("<SPC>" . ace-jump-mode)
+       ("o" . ace-window)
+       ))
+
+    (mapc
+     (lambda (keyscommand)
+       (key-chord-define evil-insert-state-map
+        (car keyscommand) (cdr keyscommand)))
+     '(
+       ("1j" . "!")
+       ("2j" . "\"")
+       ("3j" . "#")
+       ("4j" . "$")
+       ("5j" . "%")
+       ("6f" . "&")
+       ("7f" . "/")
+       ("8f" . "(")
+       ("9f" . ")")
+       ("0f" . "=")
+       ("+f" . "?")
+       ("-f" . "_")
+       (".f" . ":")
+       (",f" . ";")
+       ))
+     ;; f1 = help
+     ;; f2 = ??
+     ;; f3 = Record macro
+     ;; f4 = End or call macro
+     ;; f10 = menu
+     ;; f12 = console (i3)
+
+     ;; (global-set-key (kbd "½") "~")
   #+end_src
