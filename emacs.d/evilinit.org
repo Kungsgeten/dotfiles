@@ -35,12 +35,15 @@
                           deft
                           dired+ dired-details+
                           diminish
+                          coffee-mode
+                          angular-snippets
                           evil evil-leader
                           expand-region
                           flycheck
                           jedi
+                          js2-mode
                           htmlize
-                          ido-vertical-mode
+                          ido-vertical-mode flx-ido
                           key-chord
                           lua-mode
                           markdown-mode
@@ -48,6 +51,7 @@
                           multiple-cursors
                           openwith
                           ox-reveal
+                          projectile
                           pydoc-info
                           smex
                           smartparens
@@ -111,6 +115,8 @@
           kept-old-versions 6
           kept-new-versions 9)
     (setq backup-directory-alist (quote ((".*" . "~/.emacs.d/backups/"))))
+    (setq auto-save-file-name-transforms
+          `((".*" ,temporary-file-directory t)))
   #+end_src
 
 * Personal info
@@ -424,10 +430,20 @@ When there is a text selection, act on the region."
     (backward-kill-word 1)))
 (define-key global-map "\C-w" 'kill-region-or-backward-word)
    
+* Projectile
 
-* Org mode
+  [[https://github.com/bbatsov/projectile][bbatsov/projectile]]
 
   #+begin_src emacs-lisp
+    (projectile-global-mode)
+    (diminish 'projectile-mode)
+  #+end_src
+  
+* Org mode
+
+** Setup and preferences
+
+   #+begin_src emacs-lisp
     (require 'org-install)
     (require 'org-protocol)
 
@@ -440,21 +456,7 @@ When there is a text selection, act on the region."
     (add-to-list 'auto-mode-alist '("\\.bml$" . org-mode))
 
     (setq org-completion-use-ido t)
-    (setq org-outline-path-complete-in-steps nil)
-
-    (setq org-directory "~/org/")
-    (setq org-default-notes-file (concat org-directory "/notes.txt"))
-    (setq org-use-fast-todo-selection t)
-    (setq org-startup-with-inline-images t)
-    (setq org-mobile-directory "~/Dropbox/Apps/MobileOrg")
-    (setq org-mobile-inbox-for-pull "~/org/mobileorg.org")
-    (setq org-mobile-files '("~/org/gtd.txt"
-                             "~/org/someday.txt"
-                             "~/org/notes.txt"
-                             "~/org/calendar.txt"
-                             "~/org/journal.txt"))
     (setq org-mobile-force-id-on-agenda-items nil)
-
     (add-hook 'org-shiftup-final-hook 'windmove-up)
     (add-hook 'org-shiftleft-final-hook 'windmove-left)
     (add-hook 'org-shiftdown-final-hook 'windmove-down)
@@ -463,81 +465,116 @@ When there is a text selection, act on the region."
     ;; So we can use "*bold*" and '*bold*'
     (setq org-emphasis-regexp-components
           '(" \t({" "- \t.,:!?;)}\\" " \t\r\n," "." 1))
-
-    (setq org-todo-keywords
-          '((sequence "TODO(t)" "VERIFY(v)" "STARTED(s)" "|" "DONE(d!)" "DELEGATED(g!)" "CANCELLED(c!)")))
-
-    (org-reload)
-
-    (setq org-agenda-files '("~/org/gtd.txt"
-                             "~/org/notes.txt"
-                             "~/org/calendar.txt"
-                             "~/org/journal.txt"))
-
-    (find-file "~/org/gtd.txt")
-    (find-file "~/org/notes.txt")
-
-    ;; = Apps
-
-    (delete '("\\.pdf\\'" . default) org-file-apps)
-    (add-to-list 'org-file-apps '("\\.pdf$" . "zathura \"%s\""))
-    (add-to-list 'org-file-apps '("\\.pdf::\\([0-9]+\\)\\'" . "zathura \"%s\" -P %1"))
-
-    ;; = Shortcuts
+    (setq org-startup-with-inline-images t)
 
     (define-key global-map "\C-cl" 'org-store-link)
     (define-key global-map "\C-cc" 'org-capture)
     (define-key global-map "\C-ca" 'org-agenda)
     (define-key global-map "\C-cb" 'org-iswitchb)
+   #+end_src
 
-    ;; = Capture and refile
+** Files
 
-    (setq org-capture-templates
+   #+begin_src emacs-lisp
+    (setq org-directory "~/org/")
+    (setq org-default-notes-file (concat org-directory "/notes.txt"))
+    (setq org-mobile-directory "~/Dropbox/Apps/MobileOrg")
+    (setq org-mobile-inbox-for-pull "~/org/mobileorg.org")
+    (setq org-mobile-files '("~/org/gtd.txt"
+                             "~/org/someday.txt"
+                             "~/org/notes.txt"
+                             "~/org/calendar.txt"
+                             "~/org/journal.txt"))
 
-          '(
-            ("t" "Todo" entry (file+headline "~/org/gtd.txt" "Inbox")
-             "* TODO %? %^G \n  %i\n  %a \n Added: %u\n\n")
-            ("n" "Note" entry (file "~/org/notes.txt")
-             "* %? \n  Added: %u\n  %a \n\n  %i")
-            ("s" "Someday" entry (file+headline "~/org/someday.txt" "Someday")
-             "* %? \n  Added: %u\n  %a \n\n  %i")
-            ("m" "Maybe" entry (file+headline "~/org/someday.txt" "Maybe")
-             "* %? \n  Added: %u\n  %a \n\n  %i")
-            ("b" "Bookmark" entry (file "~/org/bookmarks.txt")
-             "* [[%:link][%^{Title|%:description}]]   %^g \n  %?\n  Added: %u\n\n  %i"
-             :empty-lines 1)
-            ("j" "Journal" entry (file+datetree "~/org/journal.txt")
-             "** %? \n\n   %i")
-            ("c" "Calendar" entry (file+datetree) "~/org/calendar.txt"
-             "** %? \n\n   %i")
-            ))
+    (setq org-agenda-files '("~/org/gtd.txt"
+                             "~/org/notes.txt"
+                             "~/org/calendar.txt"
+                             "~/org/journal.txt"))
+   #+end_src
 
-    (setq org-refile-targets
-          '(
-            (nil . (:level . 1))
-            (org-agenda-files . (:level . 1))
-            ("~/org/someday.txt" . (:level . 1))
-          ))
+** Todos
 
-    ;; = TODO tags
+   #+begin_src emacs-lisp
+     (setq org-use-fast-todo-selection t)
+     (setq org-todo-keywords
+           '((sequence "TODO(t)" "NEXT(n)" "VERIFY(v)" "STARTED(s)" "|" "WAITING(w!)" "DONE(d!)" "DELEGATED(g!)" "CANCELLED(c!)")))
 
-    (setq org-agenda-custom-commands
-          '(("h" "Todo lists"
-             ((agenda)
-              (tags-todo "@home")
-              (tags-todo "@work")
-              (tags-todo "@town")
-              (tags-todo "@computer")
-              (tags-todo "@windows")
-              (tags-todo "@linux")
-              (tags-todo "@borås")
-              (tags-todo "@phone")
-              (tags-todo "@ipad")
-              (tags-todo "@göteborg")))))
+     (setq org-agenda-custom-commands
+           '(("h" "Todo lists"
+              ((agenda)
+               (tags-todo "@home")
+               (tags-todo "@work")
+               (tags-todo "@town")
+               (tags-todo "@computer")
+               (tags-todo "@windows")
+               (tags-todo "@linux")
+               (tags-todo "@borås")
+               (tags-todo "@phone")
+               (tags-todo "@ipad")
+               (tags-todo "@göteborg")))))
+   #+end_src
 
-    ;; Deft
-    ;;;;;;;
+** Apps
 
+   #+begin_src emacs-lisp
+    (delete '("\\.pdf\\'" . default) org-file-apps)
+    (add-to-list 'org-file-apps '("\\.pdf$" . "zathura \"%s\""))
+    (add-to-list 'org-file-apps '("\\.pdf::\\([0-9]+\\)\\'" . "zathura \"%s\" -P %1"))
+   #+end_src
+
+** Capture and refile
+
+   #+begin_src emacs-lisp
+     (setq org-capture-templates
+           '(
+             ("t" "Todo" entry (file+headline "~/org/gtd.txt" "Inbox")
+              "* TODO %? \n  %i\n  %a \n Added: %u\n\n")
+             ("n" "Note" entry (file "~/org/notes.txt")
+              "* %? \n  Added: %u\n  %a \n\n  %i")
+             ("s" "Someday" entry (file+headline "~/org/someday.txt" "Someday")
+              "* %? \n  Added: %u\n  %a \n\n  %i")
+             ("m" "Maybe" entry (file+headline "~/org/someday.txt" "Maybe")
+              "* %? \n  Added: %u\n  %a \n\n  %i")
+             ("b" "Bookmark" entry (file "~/org/bookmarks.txt")
+              "* [[%:link][%^{Title|%:description}]]   %^g \n  %?\n  Added: %u\n\n  %i"
+              :empty-lines 1)
+             ("j" "Journal" entry (file+datetree "~/org/journal.txt")
+              "** %? \n\n   %i")
+             ("c" "Calendar" entry (file+datetree "~/org/calendar.txt")
+              "** %? \n\n   %i")
+             ))
+
+     (setq org-refile-targets
+           '(
+             (nil . (:maxlevel . 5))
+             (org-agenda-files . (:maxlevel . 5))
+             ("~/org/someday.txt" . (:maxlevel . 1))
+             ))
+
+     ; Use full outline paths for refile targets - we file directly with IDO
+     (setq org-refile-use-outline-path t)
+
+     ; Targets complete directly with IDO
+     (setq org-outline-path-complete-in-steps nil)
+
+     ; Allow refile to create parent tasks with confirmation
+     (setq org-refile-allow-creating-parent-nodes (quote confirm))
+
+     ; Use IDO for both buffer and file completion and ido-everywhere to t
+     (setq org-completion-use-ido t)
+
+     ;;;; Refile settings
+     ; Exclude DONE state tasks from refile targets
+     (defun bh/verify-refile-target ()
+       "Exclude todo keywords with a done state from refile targets"
+       (not (member (nth 2 (org-heading-components)) org-done-keywords)))
+
+     (setq org-refile-target-verify-function 'bh/verify-refile-target)
+   #+end_src
+
+** Deft
+
+  #+begin_src emacs-lisp
     (setq deft-extension "txt")
     (setq deft-text-mode 'org-mode)
     (global-set-key [f9] 'deft)
@@ -545,6 +582,39 @@ When there is a text selection, act on the region."
     (setq deft-use-filename-as-title t)
   #+end_src
 
+** Babel
+
+   #+begin_src emacs-lisp
+     ; Make babel results blocks lowercase
+     (setq org-babel-results-keyword "results")
+
+     (org-babel-do-load-languages
+      (quote org-babel-load-languages)
+      (quote ((emacs-lisp . t)
+              (dot . t)
+              (ditaa . t)
+              (R . t)
+              (python . t)
+              (ruby . t)
+              (gnuplot . t)
+              (clojure . t)
+              (sh . t)
+              (ledger . t)
+              (org . t)
+              (plantuml . t)
+              (latex . t))))
+
+     ;; ; Do not prompt to confirm evaluation
+     ;; ; This may be dangerous - make sure you understand the consequences
+     ;; ; of setting this -- see the docstring for details
+     ;; (setq org-confirm-babel-evaluate nil)
+   #+end_src
+** Open files
+
+   #+begin_src emacs-lisp
+     (find-file "~/org/gtd.txt")
+     (find-file "~/org/notes.txt")
+   #+end_src
 * LaTeX
 
   #+begin_src emacs-lisp
@@ -621,6 +691,10 @@ When there is a text selection, act on the region."
      (add-to-list 'auto-mode-alist '("\\.php$" . web-mode))
      (add-to-list 'auto-mode-alist '("\\.htm$" . web-mode))
      (add-to-list 'auto-mode-alist '("\\.html$" . web-mode))
+     (add-hook 'web-mode-hook '(lambda ()
+       (local-set-key (kbd "RET") 'newline-and-indent)
+       (emmet-mode)))
+     (custom-set-variables '(coffee-tab-width 2))
    #+end_src
 
 *** CSS
@@ -881,6 +955,12 @@ When there is a text selection, act on the region."
     (define-key evil-normal-state-map (kbd "SPC") 'ace-jump-word-mode)
   #+end_src
 
+  Start in insert mode when capturing
+
+  #+begin_src emacs-lisp
+    (add-hook 'org-capture-mode-hook 'evil-insert-state)
+  #+end_src
+
   Leader key (,) stuff
 
   - f :: Find file
@@ -911,6 +991,7 @@ When there is a text selection, act on the region."
      (global-set-key (kbd "C-9") 'mc/mark-next-like-this)
      (global-set-key (kbd "C-8") 'mc/mark-all-like-this)
 
+     ;; (global-set-key (kbd "<return>") 'newline-and-indent)
      (global-set-key (kbd "M-x") 'smex)
      (global-set-key (kbd "M-X") 'smex-major-mode-commands)
      (global-set-key "\M-n" 'next-user-buffer)
@@ -936,12 +1017,14 @@ When there is a text selection, act on the region."
        ("1" . delete-other-windows)
        ("2" . split-window-below)
        ("3" . split-window-right)
+       ("r" . recentf-open-files)
        ("u" . undo-tree-visualize)
        ("m" . magit-status)
        ("d" . deft)
        ("s" . sunrise)
        ("<SPC>" . ace-jump-mode)
        ("o" . ace-window)
+       ("f" . projectile-find-file)
        ))
 
     (mapc

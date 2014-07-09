@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: ng-directive
+# key: directive
+# --
+
+app.directive '${1:directiveName}', ($2) ->
+  restrict: '${3:E}'
+  link: () -> ...
+  template: '<div></div>'
+  templateUrl: 'directive.html'
+  controller: () -> ...
+  controllerAs: 
