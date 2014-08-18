@@ -1029,10 +1029,17 @@ When there is a text selection, act on the region."
       (other-window 1)
       (org-table-goto-column 4) ;; End time
       (ess/org-field-to-kill-ring)
-      (next-line)
       (other-window 1)
       (yank)
       (insert ">")
+      (org-return-indent)
+      (insert "Sal: ")
+      (other-window 1)
+      (org-table-goto-column 5) ;; Location
+      (ess/org-field-to-kill-ring)
+      (next-line)
+      (other-window 1)
+      (yank)
       (newline))
   #+end_src
 * Global shortcuts
