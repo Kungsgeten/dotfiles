@@ -1028,6 +1028,29 @@ When there is a text selection, act on the region."
        ("f" . projectile-find-file)
        ))
 
+    ;; Keymap for multiple-cursors
+    (mapc
+     (lambda (keyscommand)
+       (global-set-key 
+        (kbd (concat "C-c m " (car keyscommand)))
+        (cdr keyscommand)))
+     '(
+       ("n" . mc/mark-next-like-this)
+       ("w" . mc/mark-next-word-like-this)
+       ("s" . mc/mark-next-symbol-like-this)
+       ("p" . mc/mark-previous-like-this)
+       ("W" . mc/mark-previous-word-like-this)
+       ("S" . mc/mark-previous-symbol-like-this)
+       ("m" . mc/mark-more-like-this-extended)
+       ("l" . mc/edit-lines)
+       ("a" . mc/edit-beginnings-of-lines)
+       ("e" . mc/edit-ends-of-lines)
+       ("C-s" . mc/mark-all-in-region)
+       ("*" . mc/mark-all-like-this)
+       ("<" . mc/mark-sgml-tag-pair)
+       (">" . mc/mark-sgml-tag-pair)
+    ))
+
     (mapc
      (lambda (keyscommand)
        (key-chord-define evil-insert-state-map
