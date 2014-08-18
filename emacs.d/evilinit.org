@@ -707,8 +707,9 @@ When there is a text selection, act on the region."
 ** Python
 
 #+BEGIN_SRC emacs-lisp
-  (add-hook 'python-mode-hook 'jedi:setup)
-  (setq jedi:complete-on-dot t)
+  (if (string-equal system-type "gnu/linux")
+      (progn (add-hook 'python-mode-hook 'jedi:setup)
+             (setq jedi:complete-on-dot t)))
 #+END_SRC
    
 * Dired and bookmarks
