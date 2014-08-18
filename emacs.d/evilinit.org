@@ -987,6 +987,54 @@ When there is a text selection, act on the region."
       "b" 'switch-to-buffer
       "k" 'kill-this-buffer)
   #+end_src
+* Work related
+
+  #+begin_src emacs-lisp
+    (defun ess/org-field-to-kill-ring ()
+      "Inserts the current org-mode table field into the kill ring"
+      (interactive)
+      (let ((start (point)))
+        (org-table-end-of-field 1)
+        (copy-region-as-kill start (point))))
+
+    (defun ess/timeedit-csv-to-orgmode ()
+      "Converts a CSV file from TimeEdit, converted into an org-mode table, into org-mode headings"
+      (interactive)
+      (org-insert-heading)
+      (other-window 1)
+      (org-table-goto-column 6) ;; The course name
+      (ess/org-field-to-kill-ring)
+      (other-window 1)
+      (yank)
+      (insert " - ")
+      (other-window 1)
+      (org-table-goto-column 10) ;; The type of moment
+      (ess/org-field-to-kill-ring)
+      (other-window 1)
+      (yank)
+      (org-return-indent)
+      (insert "<")
+      (other-window 1)
+      (org-table-goto-column 1) ;; Date
+      (ess/org-field-to-kill-ring)
+      (other-window 1)
+      (yank)
+      (insert " ")
+      (other-window 1)
+      (org-table-next-field) ;; Start time
+      (ess/org-field-to-kill-ring)
+      (other-window 1)
+      (yank)
+      (insert "-")
+      (other-window 1)
+      (org-table-goto-column 4) ;; End time
+      (ess/org-field-to-kill-ring)
+      (next-line)
+      (other-window 1)
+      (yank)
+      (insert ">")
+      (newline))
+  #+end_src
 * Global shortcuts
 
   Here's the keys that are defined in all modes.
