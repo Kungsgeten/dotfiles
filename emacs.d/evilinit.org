@@ -19,7 +19,7 @@
   - yascroll :: Show scrollbar in fringe
   - emmet :: Write html more easy
   - rainbow-mode :: Show colors in buffer when writing e.g. #ffa3f2
-
+  - yafolding :: Fold code blocks
 
   #+begin_src emacs-lisp
     (require 'package)
@@ -59,6 +59,7 @@
                           sunrise-commander
                           undo-tree
                           web-mode
+                          yafolding
                           yascroll
                           yasnippet
                           zenburn-theme
@@ -656,25 +657,36 @@ When there is a text selection, act on the region."
   #+begin_src emacs-lisp
     (defun prelude-font-lock-comment-annotations ()
       "Highlight a bunch of well known comment annotations.
-    
+
     This functions should be added to the hooks of major modes for programming."
       (font-lock-add-keywords
        nil '(("\\<\\(\\(FIX\\(ME\\)?\\|TODO\\|OPTIMIZE\\|HACK\\|REFACTOR\\):\\)"
               1 font-lock-warning-face t))))
-    
+
     (defun prelude-prog-mode-defaults ()
       "Default coding hook, useful with any programming language."
       (smartparens-mode +1)
       (rainbow-delimiters-mode +1)
       (prelude-font-lock-comment-annotations))
-    
+
     (setq prelude-prog-mode-hook 'prelude-prog-mode-defaults)
-    
+
     (require 'which-func)
     (which-function-mode 1)
-    
+
     (add-hook 'prog-mode-hook (lambda ()
                                 (run-hooks 'prelude-prog-mode-hook)))
+
+    (require 'yafolding)
+    (define-key yafolding-mode-map (kbd "<C-S-return>") nil)
+    (define-key yafolding-mode-map (kbd "<C-return>") nil)
+    (define-key yafolding-mode-map (kbd "C-c <C-S-return>") 'yafolding-toggle-all)
+    (define-key yafolding-mode-map (kbd "C-c <C-return>") 'yafolding-toggle-element)
+
+    (add-hook 'prog-mode-hook
+              (lambda () (yafolding-mode)))
+
+
   #+end_src
 
 ** AutoHotKey
@@ -979,104 +991,146 @@ When there is a text selection, act on the region."
 
   Here's the keys that are defined in all modes.
 
-  #+begin_src emacs-lisp
-     (global-set-key (kbd "M-j")
-                     (lambda ()
-                       (interactive)
-                       (join-line -1)))
+** Multiple cursors
 
-     (global-set-key (kbd "C-c e") 'eval-and-replace)
+   #+begin_src emacs-lisp
+     (mapc
+      (lambda (keyscommand)
+        (global-set-key 
+         (kbd (concat "C-c m " (car keyscommand)))
+         (cdr keyscommand)))
+      '(
+        ("n" . mc/mark-next-like-this)
+        ("w" . mc/mark-next-word-like-this)
+        ("s" . mc/mark-next-symbol-like-this)
+        ("p" . mc/mark-previous-like-this)
+        ("W" . mc/mark-previous-word-like-this)
+        ("S" . mc/mark-previous-symbol-like-this)
+        ("m" . mc/mark-more-like-this-extended)
+        ("l" . mc/edit-lines)
+        ("a" . mc/edit-beginnings-of-lines)
+        ("e" . mc/edit-ends-of-lines)
+        ("C-s" . mc/mark-all-in-region)
+        ("*" . mc/mark-all-like-this)
+        ("<" . mc/mark-sgml-tag-pair)
+        (">" . mc/mark-sgml-tag-pair)
+        ))
 
-     (require 'expand-region)
-     (global-set-key (kbd "C-0") 'er/expand-region)
-     (global-set-key (kbd "C-9") 'mc/mark-next-like-this)
-     (global-set-key (kbd "C-8") 'mc/mark-all-like-this)
+     (global-unset-key (kbd "M-<down-mouse-1>"))
+     (global-set-key (kbd "M-<mouse-1>") 'mc/add-cursor-on-click)
+   #+end_src
 
-     ;; (global-set-key (kbd "<return>") 'newline-and-indent)
-     (global-set-key (kbd "M-x") 'smex)
-     (global-set-key (kbd "M-X") 'smex-major-mode-commands)
-     (global-set-key "\M-n" 'next-user-buffer)
-     (global-set-key "\M-p" 'previous-user-buffer)
-     (global-set-key (kbd "<C-prior>") 'previous-emacs-buffer) ; Ctrl+Shift+PageUp
-     (global-set-key (kbd "<C-next>") 'next-emacs-buffer) ; Ctrl+Shift+PageDown
-     (global-set-key (kbd "C-c u") 'browse-url)
-     (global-set-key (kbd "C-c s") 'yas-insert-snippet)
-     (global-set-key (kbd "C-x o") 'ace-window)
-     (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+** § leader key
 
-    ;; Use § as a leader key 
-    (global-unset-key (kbd "§"))
+   #+begin_src emacs-lisp
+     ;; Use § as a leader key 
+     (global-unset-key (kbd "§"))
 
-    (mapc
-     (lambda (keyscommand)
-       (global-set-key 
-        (kbd (concat "§ " (car keyscommand)))
-        (cdr keyscommand)))
-     '(
-       ("§" . (lambda () (interactive) (insert "§")))
-       ("0" . delete-window)
-       ("1" . delete-other-windows)
-       ("2" . split-window-below)
-       ("3" . split-window-right)
-       ("r" . recentf-open-files)
-       ("u" . undo-tree-visualize)
-       ("m" . magit-status)
-       ("d" . deft)
-       ("s" . sunrise)
-       ("<SPC>" . ace-jump-mode)
-       ("o" . ace-window)
-       ("f" . projectile-find-file)
-       ))
+     (mapc
+      (lambda (keyscommand)
+        (global-set-key 
+         (kbd (concat "§ " (car keyscommand)))
+         (cdr keyscommand)))
+      '(
+        ("§" . (lambda () (interactive) (insert "§")))
+        ("0" . delete-window)
+        ("1" . delete-other-windows)
+        ("2" . split-window-below)
+        ("3" . split-window-right)
+        ("w" . ace-window)
+        ("r" . recentf-open-files)
+        ("u" . undo-tree-visualize)
+        ("m" . magit-status)
+        ("d" . deft)
+        ("s" . sunrise)
+        ("<SPC>" . ace-jump-mode)
+        ("o" . ace-window)
+        ("f" . projectile-find-file)
+        ))   
+   #+end_src
 
-    ;; Keymap for multiple-cursors
-    (mapc
-     (lambda (keyscommand)
-       (global-set-key 
-        (kbd (concat "C-c m " (car keyscommand)))
-        (cdr keyscommand)))
-     '(
-       ("n" . mc/mark-next-like-this)
-       ("w" . mc/mark-next-word-like-this)
-       ("s" . mc/mark-next-symbol-like-this)
-       ("p" . mc/mark-previous-like-this)
-       ("W" . mc/mark-previous-word-like-this)
-       ("S" . mc/mark-previous-symbol-like-this)
-       ("m" . mc/mark-more-like-this-extended)
-       ("l" . mc/edit-lines)
-       ("a" . mc/edit-beginnings-of-lines)
-       ("e" . mc/edit-ends-of-lines)
-       ("C-s" . mc/mark-all-in-region)
-       ("*" . mc/mark-all-like-this)
-       ("<" . mc/mark-sgml-tag-pair)
-       (">" . mc/mark-sgml-tag-pair)
-    ))
+** Anti shift key
 
-    (mapc
-     (lambda (keyscommand)
-       (key-chord-define evil-insert-state-map
-        (car keyscommand) (cdr keyscommand)))
-     '(
-       ("1j" . "!")
-       ("2j" . "\"")
-       ("3j" . "#")
-       ("4j" . "$")
-       ("5j" . "%")
-       ("6f" . "&")
-       ("7f" . "/")
-       ("8f" . "(")
-       ("9f" . ")")
-       ("0f" . "=")
-       ("+f" . "?")
-       ("-f" . "_")
-       (".f" . ":")
-       (",f" . ";")
-       ))
-     ;; f1 = help
-     ;; f2 = ??
-     ;; f3 = Record macro
-     ;; f4 = End or call macro
-     ;; f10 = menu
-     ;; f12 = console (i3)
+   #+begin_src emacs-lisp
+     (mapc
+      (lambda (keyscommand)
+        (key-chord-define evil-insert-state-map
+         (car keyscommand) (cdr keyscommand)))
+      '(
+        ("1j" . "!")
+        ("2j" . "\"")
+        ("3j" . "#")
+        ("4j" . "$")
+        ("5j" . "%")
+        ("6f" . "&")
+        ("7f" . "/")
+        ("8f" . "(")
+        ("9f" . ")")
+        ("0f" . "=")
+        ("+f" . "?")
+        ("-f" . "_")
+        (".f" . ":")
+        (",f" . ";")
+        ))
+   #+end_src
 
-     ;; (global-set-key (kbd "½") "~")
-  #+end_src
+** Other
+   #+begin_src emacs-lisp
+      (global-set-key (kbd "M-j")
+                      (lambda ()
+                        (interactive)
+                        (join-line -1)))
+
+      (global-set-key (kbd "C-c e") 'eval-and-replace)
+
+      (require 'expand-region)
+      (global-set-key (kbd "C-0") 'er/expand-region)
+      (global-set-key (kbd "C-9") 'mc/mark-next-like-this)
+      (global-set-key (kbd "C-8") 'mc/mark-all-like-this)
+
+      ;; (global-set-key (kbd "<return>") 'newline-and-indent)
+      (global-set-key (kbd "M-x") 'smex)
+      (global-set-key (kbd "M-X") 'smex-major-mode-commands)
+      (global-set-key "\M-n" 'next-user-buffer)
+      (global-set-key "\M-p" 'previous-user-buffer)
+      (global-set-key (kbd "<C-prior>") 'previous-emacs-buffer) ; Ctrl+Shift+PageUp
+      (global-set-key (kbd "<C-next>") 'next-emacs-buffer) ; Ctrl+Shift+PageDown
+      (global-set-key (kbd "C-c u") 'browse-url)
+      (global-set-key (kbd "C-c s") 'yas-insert-snippet)
+      (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+
+     ;; M-a and M-e should take us to the next blank line
+     (global-set-key "\M-a" 'endless/backward-paragraph)
+     (global-set-key "\M-e" 'endless/forward-paragraph)
+
+     (defun endless/forward-paragraph (&optional n)
+       "Advance just past next blank line."
+       (interactive "p")
+       (let ((m (use-region-p))
+             (para-commands
+              '(endless/forward-paragraph endless/backward-paragraph)))
+         ;; Only push mark if it's not active and we're not repeating.
+         (or m
+             (not (member this-command para-commands))
+             (member last-command para-commands)
+             (push-mark))
+         ;; The actual movement.
+         (dotimes (_ (abs n))
+           (if (> n 0)
+               (skip-chars-forward "\n[:blank:]")
+             (skip-chars-backward "\n[:blank:]"))
+           (if (search-forward-regexp
+                "\n[[:blank:]]*\n[[:blank:]]*" nil t (cl-signum n))
+               (goto-char (match-end 0))
+             (goto-char (if (> n 0) (point-max) (point-min)))))
+         ;; If mark wasn't active, I like to indent the line too.
+         (unless m
+           (indent-according-to-mode)
+           ;; This looks redundant, but it's surprisingly necessary.
+           (back-to-indentation))))
+
+     (defun endless/backward-paragraph (&optional n)
+       "Go back up to previous blank line."
+       (interactive "p")
+       (endless/forward-paragraph (- n)))
+   #+end_src
