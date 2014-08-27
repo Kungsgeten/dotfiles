@@ -8,10 +8,15 @@
   - diminish :: Don't show some minor modes in mode line
   - evil :: Vim emulation
   - evil-leader :: Have a key and then another to execute stuff
+  - evil-args :: Kan välja argument som en enhet i evil
+  - evil-nerd-commenter :: Kommentera saker i evil lättare
+  - evil-surround-mode :: Ta bort saker runt ord, typ taggar eller ""
   - expand-region :: Select logical units, then expand
   - flycheck :: On the fly syntax checking
   - htmlize :: Convert buffer to html
   - jedi :: Completion for Python
+  - neotree :: Få upp ett filträd
+  - skewer-mode :: Skicka saker från emacs till webläsaren
   - smex :: Ido for M-x
   - smartparens :: Like paredit
   - rainbow-delimeters :: Make () and such different colors
@@ -37,7 +42,7 @@
                           diminish
                           coffee-mode
                           angular-snippets
-                          evil evil-leader
+                          evil evil-leader evil-args evil-nerd-commenter evil-surround
                           expand-region
                           flycheck
                           jedi
@@ -49,10 +54,12 @@
                           markdown-mode
                           magit
                           multiple-cursors
+                          neotree
                           openwith
                           ox-reveal
                           projectile
                           pydoc-info
+                          skewer-mode
                           smex
                           smartparens
                           slime rainbow-delimiters
@@ -472,6 +479,7 @@ When there is a text selection, act on the region."
     (define-key global-map "\C-cc" 'org-capture)
     (define-key global-map "\C-ca" 'org-agenda)
     (define-key global-map "\C-cb" 'org-iswitchb)
+    (define-key global-map "\C-cy" 'ess/org-yank-link)
    #+end_src
 
 ** Files
@@ -573,12 +581,24 @@ When there is a text selection, act on the region."
      (setq org-refile-target-verify-function 'bh/verify-refile-target)
    #+end_src
 
+   Command that yanks as an org-mode link
+
+   #+BEGIN_SRC emacs-lisp
+     (defun ess/org-yank-link ()
+       (interactive)
+       (insert "[[")
+       (yank)
+       (insert "][]]")
+       (backward-char 2))
+   #+END_SRC
+
 ** Deft
 
   #+begin_src emacs-lisp
     (setq deft-extension "txt")
     (setq deft-text-mode 'org-mode)
     (global-set-key [f9] 'deft)
+    (add-hook 'org-capture-mode-hook 'evil-emacs-state)
     (setq deft-directory org-directory)
     (setq deft-use-filename-as-title t)
   #+end_src
@@ -974,7 +994,43 @@ When there is a text selection, act on the region."
     (add-hook 'org-capture-mode-hook 'evil-insert-state)
   #+end_src
 
-  Leader key (,) stuff
+  [[https://github.com/wcsmith/evil-args][Evil args]] Man kan ändra argument i stil med cia, ta bort med daa
+  eller gå frammåt/bakåt med HJKL.
+
+  #+begin_src emacs-lisp
+    (require 'evil-args)
+
+    ;; bind evil-args text objects
+    (define-key evil-inner-text-objects-map "a" 'evil-inner-arg)
+    (define-key evil-outer-text-objects-map "a" 'evil-outer-arg)
+
+    ;; bind evil-forward/backward-args
+    (define-key evil-normal-state-map "L" 'evil-forward-arg)
+    (define-key evil-normal-state-map "H" 'evil-backward-arg)
+    (define-key evil-motion-state-map "L" 'evil-forward-arg)
+    (define-key evil-motion-state-map "H" 'evil-backward-arg)
+
+    ;; bind evil-jump-out-args
+    (define-key evil-normal-state-map "K" 'evil-jump-out-args)
+  #+end_src
+
+  [[https://github.com/timcharper/evil-surround][Evil surround]]. ys<textobject><trigger> omringar med tecken, räcker
+  med s in visual-state. cs<old><new> och ds<trigger> funkar
+
+  #+begin_src emacs-lisp
+    (require 'evil-surround)
+    (global-evil-surround-mode 1)
+  #+end_src
+
+  Nerd commenter
+
+  #+begin_src emacs-lisp
+    (setq evilnc-hotkey-comment-operator "öö")
+    (require 'evil-nerd-commenter)
+    (global-set-key (kbd "M-;") 'evilnc-comment-or-uncomment-lines)
+  #+end_src
+  
+  Leader key (ö) stuff
 
   - f :: Find file
   - b :: Switch buffer
@@ -985,8 +1041,26 @@ When there is a text selection, act on the region."
     (evil-leader/set-key
       "f" 'find-file
       "b" 'switch-to-buffer
-      "k" 'kill-this-buffer)
+      "k" 'kill-this-buffer
+      "ci" 'evilnc-comment-or-uncomment-lines
+      "cl" 'evilnc-quick-comment-or-uncomment-to-the-line
+      "ll" 'evilnc-quick-comment-or-uncomment-to-the-line
+      "cc" 'evilnc-copy-and-comment-lines
+      "cp" 'evilnc-comment-or-uncomment-paragraphs
+      "cr" 'comment-or-uncomment-region
+      "cv" 'evilnc-toggle-invert-comment-line-by-line)
   #+end_src
+
+* Neotree
+
+  #+begin_src emacs-lisp
+    (require 'neotree)
+    (add-hook 'neotree-mode-hook 'evil-emacs-state)
+    (define-key neotree-mode-map (kbd "j") 'next-line)
+    (define-key neotree-mode-map (kbd "k") 'previous-line)
+    (global-set-key [f8] 'neotree-toggle)
+  #+end_src
+  
 * Work related
 
   #+begin_src emacs-lisp
@@ -1096,12 +1170,14 @@ When there is a text selection, act on the region."
         ("r" . recentf-open-files)
         ("u" . undo-tree-visualize)
         ("m" . magit-status)
+        ("n" . neotree-toggle)
         ("d" . deft)
         ("s" . sunrise)
         ("<SPC>" . ace-jump-mode)
         ("o" . ace-window)
         ("f" . projectile-find-file)
-        ))   
+        ("i" . (lambda () (interactive) (find-file "~/.emacs.d/evilinit.org")))
+        ))
    #+end_src
 
 ** Anti shift key
