@@ -17,6 +17,7 @@
   (caddar (xml-get-children game attribute)))
 
 (defun steam-get-games ()
+  (interactive)
   (setq steam-games
         (mapcar (lambda (game)
                   (cons (steam-game-attribute game 'name)
@@ -26,17 +27,18 @@
 
 (defun steam-launch-id (id)
   (case system-type
-    ('windows-nt (shell-command (concat "explorer steam://rungameid/" id)))
-    ('gnu/linux (shell-command (concat "steam steam://rungameid/" id)))
-    ('darwin (shell-command (concat "open steam://rungameid/" id)))))
+    ('windows-nt (shell-command (format "explorer steam://rungameid/%s" id)))
+    ('gnu/linux (shell-command (format "steam steam://rungameid/%s" id)))
+    ('darwin (shell-command (format "open steam://rungameid/%s" id)))))
 
 (defun steam-insert-org ()
   (interactive)
   (unless steam-games (steam-get-games))
   (mapcar (lambda (game)
-            (insert (concat "* [[elisp:(steam-launch-id \""
-                            (cdr game) "\")][" (car game) "]]\n")))
-          steam-games))
+            (insert 
+             (format "* [[elisp:(steam-launch-id %s][%s]]\n  http://steamcommunity.com/app/%s\n"
+                     (cdr game) (car game) (cdr game))))
+  steam-games))
 
 (defun steam-launch ()
   (interactive)
