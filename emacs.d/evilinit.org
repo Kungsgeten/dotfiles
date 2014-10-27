@@ -4,6 +4,7 @@
 
   - ace-jump-mode :: Quick jump to words
   - ace-window :: Quick jump to other windows
+  - aggressive-indent :: What it sounds like
   - anzu :: Show number of matches in modeline while searching
   - diminish :: Don't show some minor modes in mode line
   - evil :: Vim emulation
@@ -13,6 +14,7 @@
   - evil-surround-mode :: Ta bort saker runt ord, typ taggar eller ""
   - expand-region :: Select logical units, then expand
   - flycheck :: On the fly syntax checking
+  - helm :: Completion and stuff
   - htmlize :: Convert buffer to html
   - jedi :: Completion for Python
   - neotree :: Få upp ett filträd
@@ -34,6 +36,7 @@
     (add-to-list 'package-archives '("SC"   . "http://joseito.republika.pl/sunrise-commander/"))
 
     (defvar my-packages '(ace-jump-mode ace-window
+                          aggressive-indent
                           anzu
                           auctex
                           bookmark+
@@ -752,6 +755,12 @@ When there is a text selection, act on the region."
               (lambda () (yafolding-mode)))
 
 
+  #+end_src
+
+  Aggressive indent is used in some modes
+
+  #+begin_src emacs-lisp
+    (add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode)
   #+end_src
 
 ** AutoHotKey
