@@ -259,7 +259,9 @@
   Tab is used to execute default action, C-z is used to select action. C-c h is the helm prefix.
 
   #+begin_src emacs-lisp
+    (require 'helm)
     (require 'helm-config)
+    (require 'helm-projectile)
     (global-set-key (kbd "C-c h") 'helm-command-prefix)
     (global-unset-key (kbd "C-x c"))
 
