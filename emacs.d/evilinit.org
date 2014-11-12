@@ -803,64 +803,64 @@ When there is a text selection, act on the region."
 * Dired and bookmarks
 
   #+begin_src emacs-lisp
-     (setq bmkp-prompt-for-tags-flag 1)
-     (bookmark-bmenu-list)
-     (switch-to-buffer "*Bookmark List*")
-     
-     ;; dired - reuse current buffer by pressing 'a'
-     (put 'dired-find-alternate-file 'disabled nil)
-     
-     ;; always delete and copy recursively
-     (setq dired-recursive-deletes 'always)
-     (setq dired-recursive-copies 'always)
-     
-     (require 'dired+)
-     
-     ;; dired, better searching (filenames)
-     (setq dired-isearch-filenames t)
-     
-     (put 'dired-find-alternate-file 'disabled nil)
-     
-     (require 'dired-x)
-     (setq-default dired-omit-files-p t) ;; this is buffer-local variable
-     (setq dired-omit-files
-           (concat dired-omit-files "\\|^\\..+$")) ;; dot-files are omitted
-     
-     (setq dired-dwim-target t)
-     
-     (require 'dired-details)
-     (setq-default dired-details-hidden-string nil)
-     (dired-details-install)
-     
-     ;; Auto refresh buffers
-     (global-auto-revert-mode 1)
-     
-     ;; Also auto refresh dired, but be quiet about it
-     (setq global-auto-revert-non-file-buffers t)
-     (setq auto-revert-verbose nil)
-          
-     (defun open-in-external-app ()
-       "Open the current file or dired marked files in external app."
-       (interactive)
-       (let ( doIt
-              (myFileList
-               (cond
-                ((string-equal major-mode "dired-mode") (dired-get-marked-files))
-                (t (list (buffer-file-name))) ) ) )
-         
-         (setq doIt (if (<= (length myFileList) 5)
-                        t
-                      (y-or-n-p "Open more than 5 files?") ) )
-         
-         (when doIt
-           (cond
-            ((string-equal system-type "windows-nt")
-             (mapc (lambda (fPath) (w32-shell-execute "open" (replace-regexp-in-string "/" "\\" fPath t t)) ) myFileList)
-             )
-            ((string-equal system-type "darwin")
-             (mapc (lambda (fPath) (shell-command (format "open \"%s\"" fPath)) )  myFileList) )
-            ((string-equal system-type "gnu/linux")
-             (mapc (lambda (fPath) (let ((process-connection-type nil)) (start-process "" nil "xdg-open" fPath)) ) myFileList) ) ) ) ) )
+    (setq bmkp-prompt-for-tags-flag 1)
+    (bookmark-bmenu-list)
+    (switch-to-buffer "*Bookmark List*")
+
+    ;; dired - reuse current buffer by pressing 'a'
+    (put 'dired-find-alternate-file 'disabled nil)
+
+    ;; always delete and copy recursively
+    (setq dired-recursive-deletes 'always)
+    (setq dired-recursive-copies 'always)
+
+    (require 'dired+)
+
+    ;; dired, better searching (filenames)
+    (setq dired-isearch-filenames t)
+
+    (put 'dired-find-alternate-file 'disabled nil)
+
+    (require 'dired-x)
+    (add-hook 'dired-mode-hook (lambda () (dired-omit-mode)))
+    (setq dired-omit-files
+          (concat dired-omit-files "\\|^\\..+$")) ;; dot-files are omitted
+
+    (setq dired-dwim-target t)
+
+    (require 'dired-details)
+    (setq-default dired-details-hidden-string nil)
+    (dired-details-install)
+
+    ;; Auto refresh buffers
+    (global-auto-revert-mode 1)
+
+    ;; Also auto refresh dired, but be quiet about it
+    (setq global-auto-revert-non-file-buffers t)
+    (setq auto-revert-verbose nil)
+
+    (defun open-in-external-app ()
+      "Open the current file or dired marked files in external app."
+      (interactive)
+      (let ( doIt
+             (myFileList
+              (cond
+               ((string-equal major-mode "dired-mode") (dired-get-marked-files))
+               (t (list (buffer-file-name))) ) ) )
+        
+        (setq doIt (if (<= (length myFileList) 5)
+                       t
+                     (y-or-n-p "Open more than 5 files?") ) )
+        
+        (when doIt
+          (cond
+           ((string-equal system-type "windows-nt")
+            (mapc (lambda (fPath) (w32-shell-execute "open" (replace-regexp-in-string "/" "\\" fPath t t)) ) myFileList)
+            )
+           ((string-equal system-type "darwin")
+            (mapc (lambda (fPath) (shell-command (format "open \"%s\"" fPath)) )  myFileList) )
+           ((string-equal system-type "gnu/linux")
+            (mapc (lambda (fPath) (let ((process-connection-type nil)) (start-process "" nil "xdg-open" fPath)) ) myFileList) ) ) ) ) )
 
     (if system-type 'gnu/linux
       (progn
@@ -871,12 +871,12 @@ When there is a text selection, act on the region."
         (setq openwith-associations '(("\\.odt\\'" "libreoffice" (file))))     
         (openwith-mode t)))
 
-     
-     (global-set-key (kbd "<C-return>") 'open-in-external-app)
+    (define-key dired-mode-map (kbd "<C-return>") 'open-in-external-app)
+    (define-key dired-mode-map (kbd "SPC") 'open-in-external-app)
 
     (eval-after-load "dired-aux"
-       '(add-to-list 'dired-compress-file-suffixes 
-                     '("\\.zip\\'" ".zip" "unzip")))
+      '(add-to-list 'dired-compress-file-suffixes 
+                    '("\\.zip\\'" ".zip" "unzip")))
   #+end_src
 
 * Buffer manipulation
