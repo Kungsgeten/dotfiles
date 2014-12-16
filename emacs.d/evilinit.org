@@ -1208,6 +1208,7 @@ When there is a text selection, act on the region."
 ** § leader key
 
    #+begin_src emacs-lisp
+     (require 'ace-window)
      ;; Use § as a leader key 
      (global-unset-key (kbd "§"))
 
