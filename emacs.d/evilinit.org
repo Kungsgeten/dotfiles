@@ -1208,8 +1208,15 @@ When there is a text selection, act on the region."
 ** § leader key
 
    #+begin_src emacs-lisp
+     (require 'ace-window)
      ;; Use § as a leader key 
      (global-unset-key (kbd "§"))
+
+     (defun ess/window-configuration-set-or-load (char)
+       "Loads the char windowconf, or sets the register to current windowconf if there is none."
+       (if (assoc char register-alist)
+           (jump-to-register char)
+         (window-configuration-to-register char)))
 
      (mapc
       (lambda (keyscommand)
@@ -1218,14 +1225,23 @@ When there is a text selection, act on the region."
          (cdr keyscommand)))
       '(
         ("§" . (lambda () (interactive) (insert "§")))
-        ("0" . delete-window)
-        ("1" . delete-other-windows)
-        ("2" . split-window-below)
-        ("3" . split-window-right)
+        ("1" . (lambda () (interactive) (ess/window-configuration-set-or-load ?1)))
+        ("2" . (lambda () (interactive) (ess/window-configuration-set-or-load ?2)))
+        ("3" . (lambda () (interactive) (ess/window-configuration-set-or-load ?3)))
+        ("4" . (lambda () (interactive) (ess/window-configuration-set-or-load ?4)))
+        ("5" . (lambda () (interactive) (ess/window-configuration-set-or-load ?5)))
+        ("6" . (lambda () (interactive) (ess/window-configuration-set-or-load ?6)))
+        ("7" . (lambda () (interactive) (ess/window-configuration-set-or-load ?7)))
+        ("8" . (lambda () (interactive) (ess/window-configuration-set-or-load ?8)))
+        ("9" . (lambda () (interactive) (ess/window-configuration-set-or-load ?9)))
+        ("0" . (lambda () (interactive) (ess/window-configuration-set-or-load ?0)))
+        ("b b" . bookmark-jump)
+        ("b s" . bookmark-set)
         ("w" . ace-window)
         ("r" . recentf-open-files)
         ("u" . undo-tree-visualize)
         ("m" . magit-status)
+        ("g" . magit-status)
         ("n" . neotree-toggle)
         ("d" . deft)
         ("s" . sunrise)
@@ -1234,7 +1250,7 @@ When there is a text selection, act on the region."
         ("f" . helm-projectile-find-file)
         ("i" . (lambda () (interactive) (find-file "~/.emacs.d/evilinit.org")))
         ))
-   #+end_src
+  #+end_src
 
 ** Anti shift key
 
