@@ -694,9 +694,6 @@ When there is a text selection, act on the region."
     (setq TeX-save-query nil)
     (setq TeX-PDF-mode t)
     
-    (setq-default TeX-master nil)
-    (setq-default TeX-master "master")
-    
     (if system-type 'gnu/linux
       (setq TeX-view-program-list '(("zathura" "zathura %o"))
             TeX-view-program-selection '((output-pdf "zathura"))))
