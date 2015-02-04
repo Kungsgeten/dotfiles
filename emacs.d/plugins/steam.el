@@ -35,10 +35,14 @@
   (interactive)
   (unless steam-games (steam-get-games))
   (mapcar (lambda (game)
-            (insert 
-             (format "* [[elisp:(steam-launch-id %s][%s]]\n  http://steamcommunity.com/app/%s\n"
-                     (cdr game) (car game) (cdr game))))
-  steam-games))
+            (unless (search
+                     (format
+                      "http://steamcommunity.com/app/%s\n" (cdr game))
+                     (buffer-string))
+              (insert 
+               (format "* [[elisp:(steam-launch-id %s][%s]]\n  http://steamcommunity.com/app/%s\n"
+                       (cdr game) (car game) (cdr game)))))
+          steam-games))
 
 (defun steam-launch ()
   (interactive)

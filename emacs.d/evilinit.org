@@ -282,6 +282,24 @@
 
     (helm-mode 1)
     (helm-projectile-on)
+
+    ;; http://slumpy.org/blog/2014/05/03/disabling-helm-mode-for-org-mode-org-set-tags-in-emacs/
+
+    (defun kk/run-with-no-helm (orig-func &rest args)
+      "Run a function without helm completion."
+      (if (boundp 'helm-mode)
+          (let ((orig-helm-mode helm-mode))
+            (unwind-protect
+                (progn
+                  (helm-mode 0)
+                  (apply orig-func args)
+                  )
+              (helm-mode (if orig-helm-mode 1 0))))
+        (apply orig-func args)))
+
+    (advice-add 'org-icompleting-read :around 'kk/run-with-no-helm)
+    (advice-add 'org-completing-read :around 'kk/run-with-no-helm)
+    (advice-add 'org-completing-read-no-i :around 'kk/run-with-no-helm)
   #+end_src
 
   Some new keybindings
@@ -805,7 +823,6 @@ When there is a text selection, act on the region."
   #+begin_src emacs-lisp
     (setq bmkp-prompt-for-tags-flag 1)
     (bookmark-bmenu-list)
-    (switch-to-buffer "*Bookmark List*")
 
     ;; dired - reuse current buffer by pressing 'a'
     (put 'dired-find-alternate-file 'disabled nil)
@@ -1339,3 +1356,7 @@ When there is a text selection, act on the region."
        (endless/forward-paragraph (- n)))
    #+end_src
    
+* End
+  #+begin_src emacs-lisp
+    (switch-to-buffer "*Bookmark List*")
+  #+end_src
