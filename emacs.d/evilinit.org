@@ -6,6 +6,7 @@
   - ace-window :: Quick jump to other windows
   - aggressive-indent :: What it sounds like
   - anzu :: Show number of matches in modeline while searching
+  - darkroom :: Focus on writing
   - diminish :: Don't show some minor modes in mode line
   - evil :: Vim emulation
   - evil-leader :: Have a key and then another to execute stuff
@@ -14,13 +15,19 @@
   - evil-surround-mode :: Ta bort saker runt ord, typ taggar eller ""
   - expand-region :: Select logical units, then expand
   - flycheck :: On the fly syntax checking
+  - hydra :: "Modal" keybindings
   - helm :: Completion and stuff
   - htmlize :: Convert buffer to html
   - jedi :: Completion for Python
+  - lispy :: Gör saker innan paranteser i Lisp
   - neotree :: Få upp ett filträd
+  - org-cliplink :: Klistra in weblänk i org-fil
+  - org-download :: Dra bilder in i org-mode
+  - org-projectile :: TODO för projekt
   - skewer-mode :: Skicka saker från emacs till webläsaren
   - smex :: Ido for M-x
   - smartparens :: Like paredit
+  - sx :: Stack Exchange
   - rainbow-delimeters :: Make () and such different colors
   - undo-tree :: Better undo
   - yascroll :: Show scrollbar in fringe
@@ -36,45 +43,50 @@
     (add-to-list 'package-archives '("SC"   . "http://joseito.republika.pl/sunrise-commander/"))
 
     (defvar my-packages '(ace-jump-mode ace-window
-                          aggressive-indent
-                          anzu
-                          auctex
-                          bookmark+
-                          deft
-                          dired+ dired-details+
-                          diminish
-                          coffee-mode
-                          angular-snippets
-                          evil evil-leader evil-args evil-nerd-commenter evil-surround
-                          expand-region
-                          flycheck
-                          helm helm-projectile
-                          jedi
-                          js2-mode
-                          htmlize
-                          ido-vertical-mode flx-ido
-                          key-chord
-                          lua-mode
-                          markdown-mode
-                          magit
-                          multiple-cursors
-                          neotree
-                          openwith
-                          ox-reveal
-                          projectile
-                          pydoc-info
-                          skewer-mode
-                          smex
-                          smartparens
-                          slime rainbow-delimiters
-                          sunrise-commander
-                          undo-tree
-                          web-mode
-                          yafolding
-                          yascroll
-                          yasnippet
-                          zenburn-theme
-                          emmet-mode rainbow-mode)
+                                        aggressive-indent
+                                        anzu
+                                        auctex
+                                        bookmark+
+                                        darkroom
+                                        deft
+                                        dired+ dired-details+
+                                        diminish
+                                        coffee-mode
+                                        angular-snippets
+                                        evil evil-leader evil-args evil-nerd-commenter evil-surround
+                                        expand-region
+                                        flycheck
+                                        helm helm-projectile
+                                        hydra
+                                        jedi
+                                        js2-mode
+                                        htmlize
+                                        ido-vertical-mode flx-ido
+                                        key-chord
+                                        lispy
+                                        lua-mode
+                                        markdown-mode
+                                        magit
+                                        multiple-cursors
+                                        neotree
+                                        openwith
+                                        org-download org-cliplink org-projectile
+                                        ox-reveal
+                                        projectile
+                                        pydoc-info
+                                        skewer-mode
+                                        smex
+                                        smartparens
+                                        slime rainbow-delimiters
+                                        sunrise-commander
+                                        sx
+                                        undo-tree
+                                        web-mode
+                                        yafolding
+                                        yascroll
+                                        yasnippet
+                                        zenburn-theme
+                                        emmet-mode rainbow-mode)
       "List of packages to install at launch")
 
     (if system-type 'gnu/linux
@@ -704,6 +716,15 @@ When there is a text selection, act on the region."
      (find-file "~/org/gtd.txt")
      (find-file "~/org/notes.txt")
    #+end_src
+** Org-projectile
+   
+   #+begin_src emacs-lisp
+     (require 'org-projectile)
+     (setq org-projectile:projects-file
+           "~/org/projects.org")
+     (add-to-list 'org-capture-templates (org-projectile:project-todo-entry))
+   #+end_src
+
 * LaTeX
 
   #+begin_src emacs-lisp
@@ -1124,6 +1145,14 @@ When there is a text selection, act on the region."
       "cv" 'evilnc-toggle-invert-comment-line-by-line)
   #+end_src
 
+  Jag vill kunna använda vissa Emacs-kommandon även i normal-mode:
+
+  #+begin_src emacs-lisp
+    (define-key evil-normal-state-map "\C-r" 'isearch-backward)
+    (define-key evil-normal-state-map "\C-e" 'evil-end-of-line)
+    (define-key evil-motion-state-map "\C-e" 'evil-end-of-line)
+  #+end_src
+
 * Neotree
 
   #+begin_src emacs-lisp
@@ -1252,6 +1281,7 @@ When there is a text selection, act on the region."
         ("8" . (lambda () (interactive) (ess/window-configuration-set-or-load ?8)))
         ("9" . (lambda () (interactive) (ess/window-configuration-set-or-load ?9)))
         ("0" . (lambda () (interactive) (ess/window-configuration-set-or-load ?0)))
+        ("p" . org-projectile:project-todo-completing-read)
         ("b b" . bookmark-jump)
         ("b s" . bookmark-set)
         ("w" . ace-window)
