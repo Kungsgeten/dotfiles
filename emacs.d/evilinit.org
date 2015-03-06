@@ -536,19 +536,19 @@ When there is a text selection, act on the region."
 
    #+begin_src emacs-lisp
     (setq org-directory "~/org/")
-    (setq org-default-notes-file (concat org-directory "/notes.txt"))
+    (setq org-default-notes-file (concat org-directory "/notes.org"))
     (setq org-mobile-directory "~/Dropbox/Apps/MobileOrg")
     (setq org-mobile-inbox-for-pull "~/org/mobileorg.org")
-    (setq org-mobile-files '("~/org/gtd.txt"
-                             "~/org/someday.txt"
-                             "~/org/notes.txt"
-                             "~/org/calendar.txt"
-                             "~/org/journal.txt"))
+    (setq org-mobile-files '("~/org/gtd.org"
+                             "~/org/someday.org"
+                             "~/org/notes.org"
+                             "~/org/calendar.org"
+                             "~/org/journal.org"))
 
-    (setq org-agenda-files '("~/org/gtd.txt"
-                             "~/org/notes.txt"
-                             "~/org/calendar.txt"
-                             "~/org/journal.txt"))
+    (setq org-agenda-files '("~/org/gtd.org"
+                             "~/org/notes.org"
+                             "~/org/calendar.org"
+                             "~/org/journal.org"))
    #+end_src
 
 ** Todos
@@ -586,20 +586,20 @@ When there is a text selection, act on the region."
    #+begin_src emacs-lisp
      (setq org-capture-templates
            '(
-             ("t" "Todo" entry (file+headline "~/org/gtd.txt" "Inbox")
+             ("t" "Todo" entry (file+headline "~/org/gtd.org" "Inbox")
               "* TODO %? \n  %i\n  %a \n Added: %u\n\n")
-             ("n" "Note" entry (file "~/org/notes.txt")
+             ("n" "Note" entry (file "~/org/notes.org")
               "* %? \n  Added: %u\n  %a \n\n  %i")
-             ("s" "Someday" entry (file+headline "~/org/someday.txt" "Someday")
+             ("s" "Someday" entry (file+headline "~/org/someday.org" "Someday")
               "* %? \n  Added: %u\n  %a \n\n  %i")
-             ("m" "Maybe" entry (file+headline "~/org/someday.txt" "Maybe")
+             ("m" "Maybe" entry (file+headline "~/org/someday.org" "Maybe")
               "* %? \n  Added: %u\n  %a \n\n  %i")
-             ("b" "Bookmark" entry (file "~/org/bookmarks.txt")
+             ("b" "Bookmark" entry (file "~/org/bookmarks.org")
               "* [[%:link][%^{Title|%:description}]]   %^g \n  %?\n  Added: %u\n\n  %i"
               :empty-lines 1)
-             ("j" "Journal" entry (file+datetree "~/org/journal.txt")
+             ("j" "Journal" entry (file+datetree "~/org/journal.org")
               "** %? \n\n   %i")
-             ("c" "Calendar" entry (file+datetree "~/org/calendar.txt")
+             ("c" "Calendar" entry (file+datetree "~/org/calendar.org")
               "** %? \n\n   %i")
              ))
 
@@ -607,7 +607,7 @@ When there is a text selection, act on the region."
            '(
              (nil . (:maxlevel . 5))
              (org-agenda-files . (:maxlevel . 5))
-             ("~/org/someday.txt" . (:maxlevel . 1))
+             ("~/org/someday.org" . (:maxlevel . 1))
              ))
 
      ; Use full outline paths for refile targets - we file directly with IDO
@@ -683,8 +683,8 @@ When there is a text selection, act on the region."
 ** Open files
 
    #+begin_src emacs-lisp
-     (find-file "~/org/gtd.txt")
-     (find-file "~/org/notes.txt")
+     (find-file "~/org/gtd.org")
+     (find-file "~/org/notes.org")
    #+end_src
 * LaTeX
 
@@ -1168,6 +1168,9 @@ When there is a text selection, act on the region."
       (other-window 1)
       (yank)
       (newline))
+
+    (require 'scio)
+
   #+end_src
 * Global shortcuts
 
@@ -1205,15 +1208,8 @@ When there is a text selection, act on the region."
 ** § leader key
 
    #+begin_src emacs-lisp
-     (require 'ace-window)
      ;; Use § as a leader key 
      (global-unset-key (kbd "§"))
-
-     (defun ess/window-configuration-set-or-load (char)
-       "Loads the char windowconf, or sets the register to current windowconf if there is none."
-       (if (assoc char register-alist)
-           (jump-to-register char)
-         (window-configuration-to-register char)))
 
      (mapc
       (lambda (keyscommand)
@@ -1222,23 +1218,14 @@ When there is a text selection, act on the region."
          (cdr keyscommand)))
       '(
         ("§" . (lambda () (interactive) (insert "§")))
-        ("1" . (lambda () (interactive) (ess/window-configuration-set-or-load ?1)))
-        ("2" . (lambda () (interactive) (ess/window-configuration-set-or-load ?2)))
-        ("3" . (lambda () (interactive) (ess/window-configuration-set-or-load ?3)))
-        ("4" . (lambda () (interactive) (ess/window-configuration-set-or-load ?4)))
-        ("5" . (lambda () (interactive) (ess/window-configuration-set-or-load ?5)))
-        ("6" . (lambda () (interactive) (ess/window-configuration-set-or-load ?6)))
-        ("7" . (lambda () (interactive) (ess/window-configuration-set-or-load ?7)))
-        ("8" . (lambda () (interactive) (ess/window-configuration-set-or-load ?8)))
-        ("9" . (lambda () (interactive) (ess/window-configuration-set-or-load ?9)))
-        ("0" . (lambda () (interactive) (ess/window-configuration-set-or-load ?0)))
-        ("b b" . bookmark-jump)
-        ("b s" . bookmark-set)
+        ("0" . delete-window)
+        ("1" . delete-other-windows)
+        ("2" . split-window-below)
+        ("3" . split-window-right)
         ("w" . ace-window)
         ("r" . recentf-open-files)
         ("u" . undo-tree-visualize)
         ("m" . magit-status)
-        ("g" . magit-status)
         ("n" . neotree-toggle)
         ("d" . deft)
         ("s" . sunrise)
@@ -1247,7 +1234,7 @@ When there is a text selection, act on the region."
         ("f" . helm-projectile-find-file)
         ("i" . (lambda () (interactive) (find-file "~/.emacs.d/evilinit.org")))
         ))
-  #+end_src
+   #+end_src
 
 ** Anti shift key
 
