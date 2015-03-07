@@ -19,7 +19,6 @@
   - jedi :: Completion for Python
   - neotree :: Få upp ett filträd
   - skewer-mode :: Skicka saker från emacs till webläsaren
-  - smex :: Ido for M-x
   - smartparens :: Like paredit
   - rainbow-delimeters :: Make () and such different colors
   - undo-tree :: Better undo
@@ -44,7 +43,6 @@
                           dired+ dired-details+
                           diminish
                           coffee-mode
-                          angular-snippets
                           evil evil-leader evil-args evil-nerd-commenter evil-surround
                           expand-region
                           flycheck
@@ -52,7 +50,6 @@
                           jedi
                           js2-mode
                           htmlize
-                          ido-vertical-mode flx-ido
                           key-chord
                           lua-mode
                           markdown-mode
@@ -64,7 +61,6 @@
                           projectile
                           pydoc-info
                           skewer-mode
-                          smex
                           smartparens
                           slime rainbow-delimiters
                           sunrise-commander
@@ -109,8 +105,7 @@
   #+begin_src emacs-lisp
     (setq frame-title-format '("emacs"))
     (set-language-environment "English")
-    (if system-type 'gnu/linux
-      (set-frame-font "Terminus-10"))
+    (set-frame-font "Terminus-12")
 
     (let ((default-directory "~/.emacs.d/plugins/"))
       (normal-top-level-add-to-load-path '("" "ledger")))
@@ -167,9 +162,6 @@
   (require 'anzu)
   (global-anzu-mode +1)
   (diminish 'anzu-mode)
-
-  ;; enable winner-mode to manage window configurations
-  ;; (winner-mode +1)
   #+end_src
 
   The code below make Emacs more to my liking, regarding tabs,
@@ -177,7 +169,6 @@
 
   #+begin_src emacs-lisp
   (add-hook 'after-init-hook 'yas-global-mode)
-  ;; (global-set-key (kbd "C-x C-b") 'ibuffer)
   
   (setq-default indent-tabs-mode nil)
   (pending-delete-mode 1)
@@ -241,18 +232,6 @@
   
   (global-auto-revert-mode t)
    #+end_src
-
-** Ido
-
-#+begin_src emacs-lisp
-  ;; (require 'ido)
-  ;; (require 'ido-vertical-mode)
-  ;; (ido-mode 1)
-  ;; (ido-vertical-mode 1)
-  ;; (ido-everywhere t)
-  ;; (setq ido-enable-flex-matching t)
-  ;; (setq smex-save-file "~/.emacs.d/.smex-items")
-#+end_src
 
 * Helm
 
@@ -513,7 +492,6 @@ When there is a text selection, act on the region."
     (add-to-list 'auto-mode-alist '("\\.txt$" . org-mode))
     (add-to-list 'auto-mode-alist '("\\.bml$" . org-mode))
 
-    ;; (setq org-completion-use-ido t)
     (setq org-mobile-force-id-on-agenda-items nil)
     (add-hook 'org-shiftup-final-hook 'windmove-up)
     (add-hook 'org-shiftleft-final-hook 'windmove-left)
@@ -610,17 +588,8 @@ When there is a text selection, act on the region."
              ("~/org/someday.org" . (:maxlevel . 1))
              ))
 
-     ; Use full outline paths for refile targets - we file directly with IDO
-     ;; (setq org-refile-use-outline-path t)
-
-     ; Targets complete directly with IDO
-     ;; (setq org-outline-path-complete-in-steps nil)
-
      ; Allow refile to create parent tasks with confirmation
      (setq org-refile-allow-creating-parent-nodes (quote confirm))
-
-     ; Use IDO for both buffer and file completion and ido-everywhere to t
-     ;; (setq org-completion-use-ido t)
 
      ;;;; Refile settings
      ; Exclude DONE state tasks from refile targets
@@ -645,7 +614,7 @@ When there is a text selection, act on the region."
 ** Deft
 
   #+begin_src emacs-lisp
-    (setq deft-extension "txt")
+    (setq deft-extension "org")
     (setq deft-text-mode 'org-mode)
     (global-set-key [f9] 'deft)
     (add-hook 'org-capture-mode-hook 'evil-emacs-state)
@@ -678,14 +647,18 @@ When there is a text selection, act on the region."
      ;; ; Do not prompt to confirm evaluation
      ;; ; This may be dangerous - make sure you understand the consequences
      ;; ; of setting this -- see the docstring for details
-     ;; (setq org-confirm-babel-evaluate nil)
+     (setq org-confirm-babel-evaluate nil)
    #+end_src
+
 ** Open files
 
    #+begin_src emacs-lisp
      (find-file "~/org/gtd.org")
      (find-file "~/org/notes.org")
+     (find-file "~/org/drafts.org")
+     (find-file "~/org/calendar.org")
    #+end_src
+
 * LaTeX
 
   #+begin_src emacs-lisp
@@ -753,7 +726,7 @@ When there is a text selection, act on the region."
     (add-hook 'prog-mode-hook
               (lambda () (yafolding-mode)))
 
-
+    (add-hook 'lisp-mode-hook (lambda () (lispy-mode 1)))
   #+end_src
 
   Aggressive indent is used in some modes
@@ -802,7 +775,6 @@ When there is a text selection, act on the region."
   #+begin_src emacs-lisp
     (setq bmkp-prompt-for-tags-flag 1)
     (bookmark-bmenu-list)
-    (switch-to-buffer "*Bookmark List*")
 
     ;; dired - reuse current buffer by pressing 'a'
     (put 'dired-find-alternate-file 'disabled nil)
@@ -1170,13 +1142,14 @@ When there is a text selection, act on the region."
       (newline))
 
     (require 'scio)
-
   #+end_src
 * Global shortcuts
 
   Here's the keys that are defined in all modes.
 
-** Multiple cursors
+** TODO Multiple cursors
+
+   Det här borde flyttas till Hydra eller §.
 
    #+begin_src emacs-lisp
      (mapc
@@ -1205,7 +1178,9 @@ When there is a text selection, act on the region."
      (global-set-key (kbd "M-<mouse-1>") 'mc/add-cursor-on-click)
    #+end_src
 
-** § leader key
+** TODO § leader key
+
+   Koden för Windowsregister verkar ha försvunnit.
 
    #+begin_src emacs-lisp
      ;; Use § as a leader key 
@@ -1276,9 +1251,6 @@ When there is a text selection, act on the region."
       (global-set-key (kbd "C-9") 'mc/mark-next-like-this)
       (global-set-key (kbd "C-8") 'mc/mark-all-like-this)
 
-      ;; (global-set-key (kbd "<return>") 'newline-and-indent)
-      ;; (global-set-key (kbd "M-x") 'smex)
-      ;; (global-set-key (kbd "M-X") 'smex-major-mode-commands)
       (global-set-key "\M-n" 'next-user-buffer)
       (global-set-key "\M-p" 'previous-user-buffer)
       (global-set-key (kbd "<C-prior>") 'previous-emacs-buffer) ; Ctrl+Shift+PageUp
@@ -1323,3 +1295,5 @@ When there is a text selection, act on the region."
        (endless/forward-paragraph (- n)))
    #+end_src
    
+
+  
