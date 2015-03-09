@@ -108,9 +108,7 @@
     (set-frame-font "Terminus-12")
 
     (let ((default-directory "~/.emacs.d/plugins/"))
-      (normal-top-level-add-to-load-path '("" "ledger")))
-
-    (load "ledger-mode")
+      (normal-top-level-add-to-load-path '("")))
 
     (package-initialize)
     (load-theme 'zenburn t)
@@ -168,30 +166,33 @@
   deletion of selections, scrolling and coding-systems.
 
   #+begin_src emacs-lisp
-  (add-hook 'after-init-hook 'yas-global-mode)
-  
-  (setq-default indent-tabs-mode nil)
-  (pending-delete-mode 1)
+    (add-hook 'after-init-hook 'yas-global-mode)
+
+    (setq-default indent-tabs-mode nil)
+    (pending-delete-mode 1)
+        
+    (setq
+     scroll-margin 5
+     scroll-conservatively 100000
+     scroll-preserve-screen-position 1)
+
+    (setq sentence-end-double-space nil)
       
-  (setq
-   scroll-margin 5
-   scroll-conservatively 100000
-   scroll-preserve-screen-position 1)
+    (setq locale-coding-system 'utf-8)
+    (set-terminal-coding-system 'utf-8)
+    (set-keyboard-coding-system 'utf-8)
+    (set-selection-coding-system 'utf-8)
+    (setq default-buffer-file-coding-system 'utf-8)
+    (prefer-coding-system 'utf-8)
 
-  (setq sentence-end-double-space nil)
-    
-  (setq locale-coding-system 'utf-8)
-  (set-terminal-coding-system 'utf-8)
-  (set-keyboard-coding-system 'utf-8)
-  (set-selection-coding-system 'utf-8)
-  (setq default-buffer-file-coding-system 'utf-8)
-  (prefer-coding-system 'utf-8)
-  
-  (global-set-key [remap goto-line] 'goto-line-with-feedback)
+    ;; Make clipboard work on Windows
+    (cond ((string-equal system-type "windows-nt")
+           (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
+           (set-clipboard-coding-system 'utf-16le-dos)))
 
-  ;; sensible undo
-  (global-undo-tree-mode)
-  (diminish 'undo-tree-mode)  
+    ;; sensible undo
+    (global-undo-tree-mode)
+    (diminish 'undo-tree-mode)  
   #+end_src
 
   Some general functions:
@@ -1146,7 +1147,7 @@ When there is a text selection, act on the region."
 * Global shortcuts
 
   Here's the keys that are defined in all modes.
-
+  
 ** TODO Multiple cursors
 
    Det här borde flyttas till Hydra eller §.
