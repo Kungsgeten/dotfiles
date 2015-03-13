@@ -514,20 +514,21 @@ When there is a text selection, act on the region."
 ** Files
 
    #+begin_src emacs-lisp
-    (setq org-directory "~/org/")
-    (setq org-default-notes-file (concat org-directory "/notes.org"))
-    (setq org-mobile-directory "~/Dropbox/Apps/MobileOrg")
-    (setq org-mobile-inbox-for-pull "~/org/mobileorg.org")
-    (setq org-mobile-files '("~/org/gtd.org"
-                             "~/org/someday.org"
-                             "~/org/notes.org"
-                             "~/org/calendar.org"
-                             "~/org/journal.org"))
+     (setq org-directory "~/org/")
+     (setq org-default-notes-file (concat org-directory "/notes.org"))
+     (setq org-mobile-directory "~/Dropbox/Apps/MobileOrg")
+     (setq org-mobile-inbox-for-pull "~/org/mobileorg.org")
+     (setq org-mobile-files '("~/org/gtd.org"
+                              "~/org/someday.org"
+                              "~/org/notes.org"
+                              "~/org/calendar.org"
+                              "~/org/journal.org"))
 
-    (setq org-agenda-files '("~/org/gtd.org"
-                             "~/org/notes.org"
-                             "~/org/calendar.org"
-                             "~/org/journal.org"))
+     (setq org-agenda-files '("~/org/gtd.org"
+                              "~/org/notes.org"
+                              "~/org/calendar.org"
+                              "~/org/journal.org"
+                              "~/org/his.org"))
    #+end_src
 
 ** Todos
@@ -549,7 +550,10 @@ When there is a text selection, act on the region."
                (tags-todo "@borås")
                (tags-todo "@phone")
                (tags-todo "@ipad")
-               (tags-todo "@göteborg")))))
+               (tags-todo "@göteborg")))
+             ("w" "HIS work"
+              ((agenda "")
+               (tags-todo "@work")))))
    #+end_src
 
 ** Apps
@@ -566,7 +570,9 @@ When there is a text selection, act on the region."
      (setq org-capture-templates
            '(
              ("t" "Todo" entry (file+headline "~/org/gtd.org" "Inbox")
-              "* TODO %? \n  %i\n  %a \n Added: %u\n\n")
+              "* TODO %? \n  %i\n  %a \n  Added: %u\n\n")
+             ("w" "HIS" entry (file+headline "~/org/his.org" "Inbox")
+              "* TODO %? \n  %i\n  %a \n  Added: %u\n\n")
              ("n" "Note" entry (file "~/org/notes.org")
               "* %? \n  Added: %u\n  %a \n\n  %i")
              ("s" "Someday" entry (file+headline "~/org/someday.org" "Someday")
@@ -658,6 +664,7 @@ When there is a text selection, act on the region."
      (find-file "~/org/notes.org")
      (find-file "~/org/drafts.org")
      (find-file "~/org/calendar.org")
+     (find-file "~/org/his.org")
    #+end_src
 
 * LaTeX

@@ -16,7 +16,7 @@
       (move-end-of-line 1)
       (search-backward ",")
       (kill-line)
-      (insert ",Markerad")
+      (insert ",Checked")
       (write-file file))))
 
 (defun scio-org-get-data-from-entry ()
@@ -40,5 +40,9 @@
     (write-region scio-comment nil file)
     (org-forward-heading-same-level 1))
   (scio-mark-student))
+
+(defun scio-org-subtrees-to-folder ()
+  (interactive)
+  (org-map-entries 'scio-copy-org-to-folder t :tree))
 
 (provide 'scio)
