@@ -4,6 +4,10 @@
 (defvar scio-student nil)
 (defvar scio-comment nil)
 
+(defun scio-set-student ()
+  (setq scio-student (buffer-substring (+ (line-beginning-position) (org-current-level) 1)
+                                       (line-end-position))))
+
 (defun scio-set-folder ()
   (setq scio-folder (org-entry-get-with-inheritance "ARCHIVE")))
 
@@ -20,8 +24,7 @@
       (write-file file))))
 
 (defun scio-org-get-data-from-entry ()
-  (setq scio-student (buffer-substring (+ (line-beginning-position) (org-current-level) 1)
-                                       (line-end-position)))
+  (scio-set-student)
   (org-show-subtree)
   (org-mark-subtree)
   (next-line)
@@ -44,5 +47,31 @@
 (defun scio-org-subtrees-to-folder ()
   (interactive)
   (org-map-entries 'scio-copy-org-to-folder t :tree))
+
+(defun scio-submitted-dirs (path)
+  (let ((student-dirs (directory-files path nil ", "))
+        (current-level (org-current-level)))
+    (mapc (lambda (dir)
+            (let ((submissions (concat path dir "\\Submission attachment(s)\\")))
+              (when (> (length (directory-files submissions)) 2)
+                (dotimes (i (+ 1 current-level))
+                  (insert "*"))
+                (insert " " dir "\n"))))
+          student-dirs)))
+
+(defun scio-insert-submissions ()
+  (interactive)
+  (scio-set-folder)
+  (scio-submitted-dirs scio-folder))
+
+(defun scio-open-submission-folder ()
+  (interactive)
+  (scio-set-student)
+  (scio-set-folder)
+  (org-open-link-from-string (org-open-file
+                              (concat
+                               scio-folder
+                               scio-student
+                               "\\Submission attachment(s)\\"))))
 
 (provide 'scio)

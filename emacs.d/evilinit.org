@@ -184,6 +184,7 @@
     (set-selection-coding-system 'utf-8)
     (setq default-buffer-file-coding-system 'utf-8)
     (prefer-coding-system 'utf-8)
+    (setq system-time-locale "C") ;; org-mode weekdays in English
 
     ;; Make clipboard work on Windows
     (cond ((string-equal system-type "windows-nt")
