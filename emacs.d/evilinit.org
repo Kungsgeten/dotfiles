@@ -26,6 +26,7 @@
   - emmet :: Write html more easy
   - rainbow-mode :: Show colors in buffer when writing e.g. #ffa3f2
   - yafolding :: Fold code blocks
+  - wanderlust :: Email
 
   #+begin_src emacs-lisp
     (require 'package)
@@ -65,6 +66,7 @@
                           slime rainbow-delimiters
                           sunrise-commander
                           undo-tree
+                          wanderlust
                           web-mode
                           yafolding
                           yascroll
@@ -1022,10 +1024,14 @@ When there is a text selection, act on the region."
     (define-key evil-normal-state-map (kbd "SPC") 'ace-jump-word-mode)
   #+end_src
 
-  Start in insert mode when capturing
+  Some modes should start in insert state
 
   #+begin_src emacs-lisp
-    (add-hook 'org-capture-mode-hook 'evil-insert-state)
+    (evil-set-initial-state 'org-capture-mode 'insert)
+    ;; (defun fu-emacs-state-mode ()
+    ;;   (when evil-mode (evil-initial-state 'emacs)))
+    ;; (add-hook 'wl-folder-mode-hook 'fu-emacs-state-mode)
+    ;; (add-hook 'wl-summary-mode-hook 'fu-emacs-state-mode)
   #+end_src
 
   [[https://github.com/wcsmith/evil-args][Evil args]] Man kan ändra argument i stil med cia, ta bort med daa
@@ -1151,6 +1157,122 @@ When there is a text selection, act on the region."
       (newline))
 
     (require 'scio)
+  #+end_src
+
+* Wanderlust
+
+  #+begin_src emacs-lisp
+    (autoload 'wl "wl" "Wanderlust" t)
+    (require 'org-wl)
+    ;; IMAP
+    (setq elmo-imap4-default-server "mail.his.se"
+          elmo-imap4-default-user "sjoi"
+          elmo-imap4-default-authenticate-type 'clear
+          elmo-imap4-default-port '993
+          elmo-imap4-default-stream-type 'ssl
+          elmo-imap4-use-modified-utf7 t)
+
+    ;; SMTP
+    (setq smtpmail-default-smtp-server "mail.his.se"
+          smtpmail-local-domain "HS"
+          send-mail-function 'smtpmail-send-it
+          smtpmail-smtp-server "mail.his.se"
+          smtpmail-stream-type 'ssl
+          smtpmail-smtp-service 465
+          )
+    (load-library "smtpmail")
+    (setq wl-smtp-connection-type 'ssl
+          wl-smtp-posting-port 465
+          wl-smtp-posting-user "sjoi"
+          wl-smtp-posting-server "mail.his.se"
+          wl-smtp-authenticate-type "login"
+          wl-message-id-domain "HS"
+          wl-local-domain "HS"
+          )
+
+    ;; Other stuff
+    (setq wl-from "Erik Sjöstrand <erik.sjostrand@his.se>"
+          wl-default-folder "%inbox"
+          wl-draft-folder "%[his]/Drafts"
+          wl-trash-folder "%[his]/Trash"
+          wl-fcc "%[his]/Sent"
+          
+          ;; mark sent messages as read (sent messages get sent back to you and
+          ;; placed in the folder specified by wl-fcc)
+          wl-fcc-force-as-read t
+          ;; for when auto-completing foldernames
+          wl-default-spec "%"
+          wl-forward-subject-prefix "Fwd: "
+          wl-stay-folder-window t                       ;; show the folder pane (left)
+          wl-folder-window-width 25                     ;; toggle on/off with 'i'
+          )
+
+    (setq gnutls-log-level 2)
+    (setq wl-message-visible-field-list '("^To" "^Subject" "^From" "^Date" "^Cc"))
+    (setq wl-message-ignored-field-list '("^"))
+
+    ;; reply to all should not be default
+    (setq wl-draft-reply-without-argument-list
+          '(("Reply-To" ("Reply-To") nil nil)
+            ("Mail-Reply-To" ("Mail-Reply-To") nil nil)
+            ("From" ("From") nil nil)))
+
+
+    ;; C-u a to reply all
+    (setq wl-draft-reply-with-argument-list
+          '(("Followup-To" nil nil ("Followup-To"))
+            ("Mail-Followup-To" ("Mail-Followup-To") nil ("Newsgroups"))
+            ("Reply-To" ("Reply-To") ("To" "Cc" "From") ("Newsgroups"))
+            ("From" ("From") ("To" "Cc") ("Newsgroups"))))
+
+    ;; Make it work with Evil
+    (add-hook 'wl-folder-mode-hook 'evil-insert-state)
+    (add-hook 'wl-summary-mode-hook 'evil-insert-state)
+
+    ;; ;; BBDB
+
+    ;; (setq mime-bbdb/use-mail-extr nil)
+    ;; (require 'bbdb-wl)
+    ;; (bbdb-wl-setup)
+    ;; (require 'mime-bbdb)
+
+    ;; (autoload 'bbdb         "bbdb-com" "Insidious Big Brother Database" t)
+    ;; (autoload 'bbdb-name    "bbdb-com" "Insidious Big Brother Database" t)
+    ;; (autoload 'bbdb-company "bbdb-com" "Insidious Big Brother Database" t)
+    ;; (autoload 'bbdb-net     "bbdb-com" "Insidious Big Brother Database" t)
+
+    ;; (add-hook 'wl-mail-setup-hook 'bbdb-insinuate-sendmail)
+
+    ;; (setq bbdb-use-alternate-names t)
+
+    ;; (setq bbdb-file "~/.emacs.d/.bbdb") 
+    ;; (setq bbdb/mail-auto-create-p   'bbdb-ignore-some-messages-hook)
+
+    ;; ;; add record to .bbdb manually
+    ;; (setq bbdb-new-nets-always-primary t)
+    ;; (setq bbdb/mail-auto-create-p nil) 
+
+    ;; ;;; height of BBDB's window
+    ;; (setq bbdb-pop-up-target-lines 7)
+
+    ;; ;;; popup display of record in the .bbdb
+    ;; (setq bbdb-use-pop-up t)
+    ;; (setq signature-use-bbdb t)
+    ;; (setq bbdb-north-american-phone-numbers-p nil)
+
+    ;; ;;; automatic adding to ML field
+    ;; (add-hook 'bbdb-notice-hook 'bbdb-auto-notes-hook)
+
+    ;; ;;; hide bbdb field while wl-folder-suspend
+    ;; (defadvice wl-folder-suspend (after wl-bbdb-suspend activate compile)
+    ;;   (interactive)
+    ;; (bbdb-wl-exit-2))
+    ;; (defadvice wl-exit (after wl-bbdb-suspend activate compile)
+    ;;   (interactive)
+    ;; (bbdb-wl-exit-2))
+
+    ;; (put 'ML 'field-separator "\n")
+    ;; (put 'User-Agent 'field-separator "\n")
   #+end_src
 * Global shortcuts
 
