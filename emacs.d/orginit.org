@@ -1,0 +1,904 @@
+* Init
+
+  Org-install and ob-tangle is required from init.el.
+
+  Use plugins folder
+
+#+begin_src emacs-lisp
+  (defvar emacs-d
+    (file-name-directory
+     (file-chase-links load-file-name))
+    "The giant turtle on which the world rests.")
+  (setq package-user-dir
+        (expand-file-name "elpa" emacs-d))
+  (add-to-list 'load-path (expand-file-name "plugins/" emacs-d))
+  (package-initialize)
+  (setq package-enable-at-startup nil)
+
+  (eval-when-compile
+    (require 'use-package))
+  (require 'diminish)
+  (require 'bind-key)
+  (require 'hydra)
+  (require 'key-chord)
+  (key-chord-mode)
+
+  (mapc (lambda (x) (put x 'disabled nil))
+        (list 'erase-buffer 'upcase-region 'downcase-region
+              'dired-find-alternate-file 'narrow-to-region 'set-goal-column))
+
+  (setq package-archives
+        '(("melpa" . "http://melpa.milkbox.net/packages/")
+          ;; ("marmalade" . "http://marmalade-repo.org/packages/")
+          ;; ("melpa-stable" . "http://melpa-stable.milkbox.net/packages/")
+          ("gnu" . "http://elpa.gnu.org/packages/")))
+#+end_src
+
+** Layout and decoration
+
+   #+begin_src emacs-lisp
+      (tool-bar-mode -1)
+      (menu-bar-mode -1)
+      (column-number-mode t) ;; Remove?
+      (blink-cursor-mode 0)
+      (setq ring-bell-function 'ignore)
+      (setq inhibit-startup-screen t)
+      (defalias 'yes-or-no-p 'y-or-n-p)
+      (global-hl-line-mode t)
+      (scroll-bar-mode -1)
+      (setq initial-scratch-message "")
+
+      (use-package yascroll
+        :config
+        (global-yascroll-bar-mode 1))
+      (if (fboundp 'fringe-mode)
+          (fringe-mode 4))
+
+     (setq frame-title-format '("emacs"))
+     (set-frame-font "Terminus-12")
+
+     (use-package powerline
+       :config
+       :disabled t
+       (setq powerline-display-buffer-size nil)
+       (setq powerline-display-mule-info nil)
+       (setq powerline-display-hud nil)
+       (powerline-default-theme))
+
+     (use-package zenburn-theme
+       :config
+       (load-theme 'zenburn))
+   #+end_src
+   
+** Backups, history, save files
+
+   #+begin_src emacs-lisp
+     (setq make-backup-files t)
+     (setq version-control t)
+     (setq backup-by-copying t)
+     (setq delete-old-versions t)
+     (setq kept-old-versions 6)
+     (setq kept-new-versions 9)
+     (setq backup-directory-alist (quote ((".*" . "~/.emacs.d/backups/"))))
+     (setq auto-save-file-name-transforms
+            `((".*" ,temporary-file-directory t)))
+  ;; saveplace remembers your location in a file when saving files
+  (require 'saveplace)
+  (setq save-place-file (expand-file-name "saveplace" emacs-d))
+  ;; activate it for all buffers
+  (setq-default save-place t)
+  
+  ;; savehist keeps track of some history
+  (require 'savehist)
+  (setq savehist-additional-variables
+        ;; search entries
+        '(search ring regexp-search-ring)
+        ;; save every minute
+        savehist-autosave-interval 60
+        ;; keep the home clean
+        savehist-file (expand-file-name "savehist" emacs-d))
+  (savehist-mode +1)
+  
+  ;; save recent files
+  (require 'recentf)
+  (setq recentf-save-file (expand-file-name "recentf" emacs-d)
+        recentf-max-saved-items 500
+        recentf-max-menu-items 15)
+  (recentf-mode +1)
+  
+  (global-auto-revert-mode t)
+   #+end_src
+
+** Personal info
+
+   #+begin_src emacs-lisp
+     (setq user-mail-address "sjostrand.erik@gmail.com")
+     (setq user-full-name "Erik Sjöstrand")
+   #+end_src
+
+* Editor stuff
+
+  #+begin_src emacs-lisp
+    (setq-default indent-tabs-mode nil)
+    (pending-delete-mode 1)
+  #+end_src
+
+** Buffer manipulation
+
+   #+begin_src emacs-lisp
+     (use-package multiple-cursors
+       :bind ("C-9" . mc/mark-next-like-this)
+       :bind ("C-8" . mc/mark-all-like-this)
+       :config
+       (bind-keys :prefix-map my-mc-prefix-map
+                  :prefix "C-c m"
+                  ("n" . mc/mark-next-like-this)
+                  ("w" . mc/mark-next-word-like-this)
+                  ("s" . mc/mark-next-symbol-like-this)
+                  ("p" . mc/mark-previous-like-this)
+                  ("W" . mc/mark-previous-word-like-this)
+                  ("S" . mc/mark-previous-symbol-like-this)
+                  ("m" . mc/mark-more-like-this-extended)
+                  ("l" . mc/edit-lines)
+                  ("a" . mc/edit-beginnings-of-lines)
+                  ("e" . mc/edit-ends-of-lines)
+                  ("C-s" . mc/mark-all-in-region)
+                  ("*" . mc/mark-all-like-this)
+                  ("<" . mc/mark-sgml-tag-pair)
+                  (">" . mc/mark-sgml-tag-pair)))
+
+     (use-package expand-region
+       :bind ("C-0" . er/expand-region))
+
+     (bind-key "M-j"
+               (lambda ()
+                 (interactive)
+                 (join-line -1)))
+
+     (defhydra hydra-yank-pop ()
+       "yank"
+       ("C-y" yank nil)
+       ("M-y" yank-pop nil)
+       ("y" (yank-pop 1) "next")
+       ("Y" (yank-pop -1) "prev")
+       ("l" helm-show-kill-ring "list" :color blue))   ; or browse-kill-ring
+     (bind-key "M-y" #'hydra-yank-pop/yank-pop)
+     (bind-key "C-y" #'hydra-yank-pop/yank)
+
+   #+end_src
+
+  Find file as root, bound to C-x F
+
+  #+begin_src emacs-lisp
+    (defun djcb-find-file-as-root ()
+      "Like `ido-find-file, but automatically edit the file with
+        root-privileges (using tramp/sudo), if the file is not writable by
+        user."
+      (interactive)
+      (let ((file (ido-read-file-name "Edit as root: ")))
+        (unless (file-writable-p file)
+          (setq file (concat "/sudo:root@localhost:" file)))
+        (find-file file)))
+    ;; or some other keybinding...
+    (bind-key "C-x F" 'djcb-find-file-as-root)
+  #+end_src
+
+  Opens the current buffer in an external program, bound to C-c o
+
+  #+begin_src emacs-lisp
+    (defun open-with ()
+      "Simple function that allows us to open the underlying
+        file of a buffer in an external program."
+      (interactive)
+      (when buffer-file-name
+        (shell-command (concat
+                        (if (eq system-type 'darwin)
+                            "open"
+                          (read-shell-command "Open current file with: "))
+                        " "
+                        buffer-file-name))))
+    
+    (bind-key "C-c o" 'open-with)
+  #+end_src
+
+  Renames the current buffer, and its file. Bound to C-c r
+
+  #+begin_src emacs-lisp
+    (defun rename-file-and-buffer ()
+      "Rename the current buffer and file it is visiting."
+      (interactive)
+      (let ((filename (buffer-file-name)))
+        (if (not (and filename (file-exists-p filename)))
+            (message "Buffer is not visiting a file!")
+          (let ((new-name (read-file-name "New name: " filename)))
+            (cond
+             ((vc-backend filename) (vc-rename-file filename new-name))
+             (t
+              (rename-file filename new-name t)
+              (rename-buffer new-name)
+              (set-visited-file-name new-name)
+              (set-buffer-modified-p nil)))))))
+    
+    (bind-key "C-c r"  'rename-file-and-buffer)
+  #+end_src
+
+  Mouse navigation of buffers hack
+
+  #+begin_src emacs-lisp
+    (bind-key "<C-S-iso-lefttab>" 'previous-buffer)
+    (bind-key "<C-tab>" 'next-buffer)
+  #+end_src
+
+  Switching to other buffers via shortcuts, like Conkeror. M-n and M-p
+  is for user buffers and C-S-PageUp and C-S-PageDown is for Emacs buffers.
+
+  #+begin_src emacs-lisp
+    (defun next-user-buffer ()
+      "Switch to the next user buffer.
+        User buffers are those whose name does not start with *."
+      (interactive)
+      (next-buffer)
+      (let ((i 0))
+        (while (and (string-match "^*" (buffer-name)) (< i 50))
+          (setq i (1+ i)) (next-buffer) )))
+    
+    (defun previous-user-buffer ()
+      "Switch to the previous user buffer.
+        User buffers are those whose name does not start with *."
+      (interactive)
+      (previous-buffer)
+      (let ((i 0))
+        (while (and (string-match "^*" (buffer-name)) (< i 50))
+          (setq i (1+ i)) (previous-buffer) )))
+    
+    (defun next-emacs-buffer ()
+      "Switch to the next emacs buffer.
+        Emacs buffers are those whose name starts with *."
+      (interactive)
+      (next-buffer)
+      (let ((i 0))
+        (while (and (not (string-match "^*" (buffer-name))) (< i 50))
+          (setq i (1+ i)) (next-buffer) )))
+    
+    (defun previous-emacs-buffer ()
+      "Switch to the previous emacs buffer.
+        Emacs buffers are those whose name starts with *."
+      (interactive)
+      (previous-buffer)
+      (let ((i 0))
+        (while (and (not (string-match "^*" (buffer-name))) (< i 50))
+          (setq i (1+ i)) (previous-buffer) )))
+
+      (bind-key "M-n" 'next-user-buffer)
+      (bind-key "M-p" 'previous-user-buffer)
+      (bind-key "<C-prior>" 'previous-emacs-buffer) ; Ctrl+Shift+PageUp
+      (bind-key "<C-next>" 'next-emacs-buffer) ; Ctrl+Shift+PageDown
+  #+end_src
+
+** Navigation
+
+   #+begin_src emacs-lisp
+       (setq
+        scroll-margin 5
+        scroll-conservatively 100000
+        scroll-preserve-screen-position 1)
+
+     (use-package ace-window
+       :init
+       (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+       (setq aw-background nil)
+       (setq aw-flip-keys '("n" "ν")))
+
+     (use-package avy-jump
+       :commands avi-goto-char avi-goto-char-2 avi-isearch)
+     (bind-key "C-c u" 'browse-url)
+
+     ;; M-a and M-e should take us to the next blank line
+     (bind-key "M-a" 'endless/backward-paragraph)
+     (bind-key "M-e" 'endless/forward-paragraph)
+
+     (defun endless/forward-paragraph (&optional n)
+       "Advance just past next blank line."
+       (interactive "p")
+       (let ((m (use-region-p))
+             (para-commands
+              '(endless/forward-paragraph endless/backward-paragraph)))
+         ;; Only push mark if it's not active and we're not repeating.
+         (or m
+             (not (member this-command para-commands))
+             (member last-command para-commands)
+             (push-mark))
+         ;; The actual movement.
+         (dotimes (_ (abs n))
+           (if (> n 0)
+               (skip-chars-forward "\n[:blank:]")
+             (skip-chars-backward "\n[:blank:]"))
+           (if (search-forward-regexp
+                "\n[[:blank:]]*\n[[:blank:]]*" nil t (cl-signum n))
+               (goto-char (match-end 0))
+             (goto-char (if (> n 0) (point-max) (point-min)))))
+         ;; If mark wasn't active, I like to indent the line too.
+         (unless m
+           (indent-according-to-mode)
+           ;; This looks redundant, but it's surprisingly necessary.
+           (back-to-indentation))))
+
+     (defun endless/backward-paragraph (&optional n)
+       "Go back up to previous blank line."
+       (interactive "p")
+       (endless/forward-paragraph (- n)))
+   #+end_src
+
+** Language
+
+   #+begin_src emacs-lisp
+    (set-language-environment "English")
+    (setq sentence-end-double-space nil)
+      
+    (setq locale-coding-system 'utf-8)
+    (set-terminal-coding-system 'utf-8)
+    (set-keyboard-coding-system 'utf-8)
+    (set-selection-coding-system 'utf-8)
+    (setq default-buffer-file-coding-system 'utf-8)
+    (prefer-coding-system 'utf-8)
+    (setq system-time-locale "C") ;; org-mode weekdays in English
+
+    ;; Make clipboard work on Windows
+    (cond ((string-equal system-type "windows-nt")
+           (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
+           (set-clipboard-coding-system 'utf-16le-dos)))
+   #+end_src
+
+** Undo
+
+   #+begin_src emacs-lisp
+     (use-package undo-tree
+       :commands global-undo-tree-mode
+       :diminish undo-tree-mode
+       :bind ("C-z" . undo-tree-visualize)
+       :init
+       (global-undo-tree-mode))
+   #+end_src
+
+** Anti shift key
+** vi-like hydra
+#+BEGIN_SRC emacs-lisp
+  (defhydra hydra-vi
+    (:pre
+     (set-cursor-color "#e52b50")
+     :post
+     (set-cursor-color "#ffffff")
+     :color amaranth)
+    "vi"
+    ("l" forward-char)
+    ("h" backward-char)
+    ("j" next-line)
+    ("k" previous-line)
+    ("m" set-mark-command "mark")
+    ("a" move-beginning-of-line "beg")
+    ("e" move-end-of-line "end")
+    ("d" delete-region "del" :color blue)
+    ("y" kill-ring-save "yank" :color blue)
+    ("q" nil "quit"))
+
+  (key-chord-define-global "jj" 'hydra-vi/body)
+#+END_SRC
+* use-package
+
+#+begin_src emacs-lisp
+  ;; Anti-shift
+  (use-package key-chord
+    :config
+    (mapc
+     (lambda (keyscommand)
+       (key-chord-define-global 
+        (car keyscommand) (cdr keyscommand)))
+     '(
+       ("1j" . "!")
+       ("2j" . "\"")
+       ("3j" . "#")
+       ("4j" . "$")
+       ("5j" . "%")
+       ("6f" . "&")
+       ("7f" . "/")
+       ("8f" . "(")
+       ("9f" . ")")
+       ("0f" . "=")
+       ("+f" . "?")
+       ("-f" . "_")
+       (".f" . ":")
+       (",f" . ";")
+       )))
+
+  (use-package helm
+    :init
+    (setq helm-quick-update t
+          helm-split-window-in-side-p t
+          helm-buffers-fuzzy-matching t
+          helm-move-to-line-cycle-in-source t
+          helm-ff-search-library-in-sexp t
+          helm-scroll-amount 8
+          helm-ff-file-name-history-use-recentf t)
+    (use-package helm-projectile
+      :config (helm-projectile-on))
+    (when (executable-find "curl")
+      (setq helm-google-suggest-use-curl-p t))
+    
+    :bind ("C-c h" . helm-command-prefix)
+    :bind ("M-x" . helm-M-x)
+    :bind ("C-x b" . helm-mini)
+    :bind ("C-x C-f" . helm-find-files)
+    :bind ("C-c h o" . helm-occur)
+    :bind ("C-h SPC" . helm-all-mark-rings)
+    :bind ("C-c h g" . helm-google-suggest)
+    :config
+    (bind-key "<tab>" 'helm-execute-persistent-action helm-map)
+    (bind-key "C-i" 'helm-execute-persistent-action helm-map)
+    (bind-key "C-z" 'helm-select-action helm-map))
+
+  (use-package swiper
+    :bind ("C-s" . swiper))
+
+  (use-package guide-key
+    :diminish guide-key-mode
+    :config
+    (setq guide-key/guide-key-sequence '("C-x r" "C-x 4" "C-x v" "C-x 8" "C-c h" "C-h" "C-c m"))
+    (guide-key-mode 1))
+
+  (use-package yasnippet
+    :diminish yas-minor-mode
+    :bind ("C-c s" . yas-insert-snippet)
+    :config
+    (progn
+      (setq yas-fallback-behavior 'return-nil)
+      (setq yas-triggers-in-field t)
+      (setq yas-verbosity 0)
+      (setq yas-snippet-dirs (list (concat emacs-d "snippets/")))
+      (define-key yas-minor-mode-map [(tab)] nil)
+      (define-key yas-minor-mode-map (kbd "TAB") nil)
+      (yas-global-mode)))
+
+  (use-package auto-yasnippet
+    :commands aya-create aya-open-line
+    :disabled t)
+
+  (use-package transpose-frame
+    :commands transpose-frame)
+
+  (use-package smartparens
+    :diminish smartparens-mode
+    :init
+    (add-hook 'prog-mode-hook 'smartparens-mode)
+    :config
+    (show-smartparens-global-mode +1))
+
+  (use-package projectile
+    :diminish projectile-mode
+    :config
+    (projectile-global-mode))
+
+    (use-package auctex
+      :mode ("\\.tex'" . LaTeX-mode)
+      
+      :init
+      (setq TeX-auto-save t) 
+      (setq TeX-parse-self t) 
+      (setq TeX-save-query nil)
+      (setq TeX-PDF-mode t)
+      
+      (if system-type 'gnu/linux
+        (setq TeX-view-program-list '(("zathura" "zathura %o"))
+              TeX-view-program-selection '((output-pdf "zathura"))))
+      
+      (setq TeX-view-program-selection '((output-pdf "zathura")))
+      
+      (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+      (add-hook 'LaTeX-mode-hook 'turn-on-visual-line-mode)
+      (add-hook 'LaTeX-mode-hook 'orgtbl-mode)
+      ;; (add-hook 'LaTeX-mode-hook 'flyspell-mode)
+      ;; (add-hook 'LaTeX-mode-hook 'flyspell-buffer)
+      (setq reftex-plug-into-AUCTeX t))
+#+end_src
+
+* Org mode
+
+** Setup and preferences
+
+   #+begin_src emacs-lisp
+     (require 'org-install)
+     (require 'org-protocol)
+
+     (use-package worf
+       :commands worf-mode
+       :init (add-hook 'org-mode-hook #'worf-mode))
+
+     ;; Flie types Emacs should open in org-mode
+     (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+     (add-to-list 'auto-mode-alist '("\\.txt$" . org-mode))
+     (add-to-list 'auto-mode-alist '("\\.bml$" . org-mode))
+
+     ;; So we can use "*bold*" and '*bold*'
+     (setq org-emphasis-regexp-components
+           '(" \t({" "- \t.,:!?;)}\\" " \t\r\n," "." 1))
+     (setq org-startup-with-inline-images t)
+
+     (bind-key "C-c l" 'org-store-link)
+     (bind-key "C-c c" 'org-capture)
+     (bind-key "C-c a" 'org-agenda)
+     (bind-key "C-c b" 'org-iswitchb)
+     (bind-key "C-c y" 'ess/org-yank-link)
+
+     (defhydra hydra-org-template (:color blue :hint nil)
+       "
+     _c_enter  _q_uote     _e_macs-lisp    _L_aTeX:
+     _l_atex   _E_xample   _p_erl          _i_ndex:
+     _a_scii   _v_erse     _P_erl tangled  _I_NCLUDE:
+     _s_rc     ^ ^         plant_u_ml      _H_TML:
+     _h_tml    ^ ^         ^ ^             _A_SCII:
+     "
+       ("s" (hot-expand "<s"))
+       ("E" (hot-expand "<e"))
+       ("q" (hot-expand "<q"))
+       ("v" (hot-expand "<v"))
+       ("c" (hot-expand "<c"))
+       ("l" (hot-expand "<l"))
+       ("h" (hot-expand "<h"))
+       ("a" (hot-expand "<a"))
+       ("L" (hot-expand "<L"))
+       ("i" (hot-expand "<i"))
+       ("e" (progn
+              (hot-expand "<s")
+              (insert "emacs-lisp")
+              (forward-line)
+              (org-edit-src-code)))
+       ("p" (progn
+              (hot-expand "<s")
+              (insert "perl")
+              (forward-line)))
+       ("u" (progn
+              (hot-expand "<s")
+              (insert "plantuml :file CHANGE.png")
+              (forward-line)))
+       ("P" (progn
+              (insert "#+HEADERS: :results output :exports both :shebang \"#!/usr/bin/env perl\"\n")
+              (hot-expand "<s")
+              (insert "perl")
+              (forward-line)))
+       ("I" (hot-expand "<I"))
+       ("H" (hot-expand "<H"))
+       ("A" (hot-expand "<A"))
+       ("<" self-insert-command "ins")
+       ("o" nil "quit"))
+
+     (defun hot-expand (str)
+       "Expand org template."
+       (insert str)
+       (org-try-structure-completion))
+
+     (bind-key "<" (lambda () (interactive)
+                     (if (looking-back "^")
+                         (hydra-org-template/body)
+                       (self-insert-command 1)))
+               org-mode-map)
+   #+end_src
+
+** Files
+
+   #+begin_src emacs-lisp
+     (setq org-directory "~/org/")
+     (setq org-default-notes-file (concat org-directory "/notes.org"))
+     (setq org-agenda-files '("~/org/gtd.org"
+                              "~/org/notes.org"
+                              "~/org/calendar.org"
+                              "~/org/journal.org"
+                              "~/org/his.org"))
+   #+end_src
+
+** Todos
+
+   #+begin_src emacs-lisp
+     (setq org-use-fast-todo-selection t)
+     (setq org-todo-keywords
+           '((sequence "TODO(t)" "NEXT(n)" "VERIFY(v)" "STARTED(s)" "|" "WAITING(w!)" "DONE(d!)" "DELEGATED(g!)" "CANCELLED(c!)")))
+
+     (setq org-agenda-custom-commands
+           '(("h" "Todo lists"
+              ((agenda)
+               (tags-todo "@home")
+               (tags-todo "@work")
+               (tags-todo "@town")
+               (tags-todo "@computer")
+               (tags-todo "@windows")
+               (tags-todo "@linux")
+               (tags-todo "@borås")
+               (tags-todo "@phone")
+               (tags-todo "@ipad")
+               (tags-todo "@göteborg")))
+             ("w" "HIS work"
+              ((agenda "")
+               (tags-todo "@work")))))
+   #+end_src
+
+** Apps
+
+   #+begin_src emacs-lisp
+    (delete '("\\.pdf\\'" . default) org-file-apps)
+    (add-to-list 'org-file-apps '("\\.pdf$" . "zathura \"%s\""))
+    (add-to-list 'org-file-apps '("\\.pdf::\\([0-9]+\\)\\'" . "zathura \"%s\" -P %1"))
+   #+end_src
+
+** Capture and refile
+
+   #+begin_src emacs-lisp
+     (setq org-capture-templates
+           '(
+             ("t" "Todo" entry (file+headline "~/org/gtd.org" "Inbox")
+              "* TODO %? \n  %i\n  %a \n  Added: %u\n\n")
+             ("w" "HIS" entry (file+headline "~/org/his.org" "Inbox")
+              "* TODO %? \n  %i\n  %a \n  Added: %u\n\n")
+             ("n" "Note" entry (file "~/org/notes.org")
+              "* %? \n  Added: %u\n  %a \n\n  %i")
+             ("s" "Someday" entry (file+headline "~/org/someday.org" "Someday")
+              "* %? \n  Added: %u\n  %a \n\n  %i")
+             ("m" "Maybe" entry (file+headline "~/org/someday.org" "Maybe")
+              "* %? \n  Added: %u\n  %a \n\n  %i")
+             ("b" "Bookmark" entry (file "~/org/bookmarks.org")
+              "* [[%:link][%^{Title|%:description}]]   %^g \n  %?\n  Added: %u\n\n  %i"
+              :empty-lines 1)
+             ("j" "Journal" entry (file+datetree "~/org/journal.org")
+              "** %? \n\n   %i")
+             ("c" "Calendar" entry (file+datetree "~/org/calendar.org")
+              "** %? \n\n   %i")
+             ))
+
+     (setq org-refile-targets
+           '(
+             (nil . (:maxlevel . 5))
+             (org-agenda-files . (:maxlevel . 5))
+             ("~/org/someday.org" . (:maxlevel . 1))
+             ))
+
+     ; Allow refile to create parent tasks with confirmation
+     (setq org-refile-allow-creating-parent-nodes (quote confirm))
+
+     ;;;; Refile settings
+     ; Exclude DONE state tasks from refile targets
+     (defun bh/verify-refile-target ()
+       "Exclude todo keywords with a done state from refile targets"
+       (not (member (nth 2 (org-heading-components)) org-done-keywords)))
+
+     (setq org-refile-target-verify-function 'bh/verify-refile-target)
+   #+end_src
+
+   Command that yanks as an org-mode link
+
+   #+BEGIN_SRC emacs-lisp
+     (defun ess/org-yank-link ()
+       (interactive)
+       (insert "[[")
+       (yank)
+       (insert "][]]")
+       (backward-char 2))
+   #+END_SRC
+
+** Babel
+
+   #+begin_src emacs-lisp
+     ; Make babel results blocks lowercase
+     (setq org-babel-results-keyword "results")
+
+     (org-babel-do-load-languages
+      (quote org-babel-load-languages)
+      (quote ((emacs-lisp . t)
+              (dot . t)
+              (ditaa . t)
+              (R . t)
+              (python . t)
+              (ruby . t)
+              (gnuplot . t)
+              (clojure . t)
+              (sh . t)
+              (ledger . t)
+              (org . t)
+              (plantuml . t)
+              (latex . t))))
+
+     ;; ; Do not prompt to confirm evaluation
+     ;; ; This may be dangerous - make sure you understand the consequences
+     ;; ; of setting this -- see the docstring for details
+     (setq org-confirm-babel-evaluate nil)
+   #+end_src
+
+** Open files
+
+   #+begin_src emacs-lisp
+     (find-file "~/org/gtd.org")
+     (find-file "~/org/notes.org")
+     (find-file "~/org/drafts.org")
+     (find-file "~/org/calendar.org")
+     (find-file "~/org/his.org")
+   #+end_src
+
+
+* Programming
+
+  #+begin_src emacs-lisp
+    (use-package yafolding
+      :commands yafolding-mode
+      :init (add-hook 'prog-mode-hook #'yafolding-mode)
+      :config
+      (unbind-key "<C-S-return>" yafolding-mode-map)
+      (unbind-key "<C-return>" yafolding-mode-map)
+      (bind-keys :map yafolding-mode-map
+                 ("C-c <C-S-return>" . yafolding-toggle-all)
+                 ("C-c <C-return>" . yafolding-toggle-element)))
+
+    (use-package which-func
+      :config (which-function-mode 1))
+
+    (use-package rainbow-delimiters
+      :commands rainbow-delimiters-mode
+      :init (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+      :diminish rainbow-delimiters-mode)
+
+    (defun prelude-font-lock-comment-annotations ()
+      "Highlight a bunch of well known comment annotations.
+
+            This functions should be added to the hooks of major modes for programming."
+      (font-lock-add-keywords
+       nil '(("\\<\\(\\(FIX\\(ME\\)?\\|TODO\\|OPTIMIZE\\|HACK\\|REFACTOR\\):\\)"
+              1 font-lock-warning-face t))))
+
+    (add-hook 'prog-mode-hook #'prelude-font-lock-comment-annotations)
+  #+end_src
+
+** TODO use-package for webdev etc
+
+** Lisp
+
+   #+begin_src emacs-lisp
+     (use-package aggressive-indent
+       :commands aggressive-indent-mode
+       :init (add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode)
+       :diminish aggressive-indent-mode)
+
+     (use-package lispy
+       :commands lispy-mode
+       :init (add-hook 'emacs-lisp-mode-hook (lambda () (lispy-mode 1))))
+
+     (bind-key "C-c e" 'eval-and-replace)
+   #+end_src
+   
+** AutoHotKey
+
+   #+begin_src emacs-lisp
+     (autoload 'xahk-mode "xahk-mode" "Load xahk-mode for editing AutoHotkey scripts." t)
+     (add-to-list 'auto-mode-alist '("\\.ahk\\'" . xahk-mode))
+     (defalias 'ahk-mode 'xahk-mode) ; make it easier to remember.
+   #+end_src
+
+** Web Development
+
+   #+begin_src emacs-lisp
+     (add-to-list 'auto-mode-alist '("\\.php$" . web-mode))
+     (add-to-list 'auto-mode-alist '("\\.htm$" . web-mode))
+     (add-to-list 'auto-mode-alist '("\\.html$" . web-mode))
+     (add-hook 'web-mode-hook '(lambda ()
+       (local-set-key (kbd "RET") 'newline-and-indent)
+       (emmet-mode)))
+     (custom-set-variables '(coffee-tab-width 2))
+   #+end_src
+
+*** CSS
+
+   #+begin_src emacs-lisp
+     (add-hook 'css-mode-hook (lambda () (rainbow-mode +1)))
+     (eval-after-load 'css-mode (setq css-indent-offset 2))
+   #+end_src
+
+** Python
+
+#+BEGIN_SRC emacs-lisp
+  (if (string-equal system-type "gnu/linux")
+      (progn (add-hook 'python-mode-hook 'jedi:setup)
+             (setq jedi:complete-on-dot t)))
+#+END_SRC
+   
+* Dired and bookmarks
+** TODO use-package for dired
+
+   #+begin_src emacs-lisp
+     (setq bmkp-prompt-for-tags-flag 1)
+     (bookmark-bmenu-list)
+
+     ;; dired - reuse current buffer by pressing 'a'
+     (put 'dired-find-alternate-file 'disabled nil)
+
+     ;; always delete and copy recursively
+     (setq dired-recursive-deletes 'always)
+     (setq dired-recursive-copies 'always)
+
+     (require 'dired+)
+
+     ;; dired, better searching (filenames)
+     (setq dired-isearch-filenames t)
+
+     (put 'dired-find-alternate-file 'disabled nil)
+
+     (require 'dired-x)
+     (add-hook 'dired-mode-hook (lambda () (dired-omit-mode)))
+     (setq dired-omit-files
+           (concat dired-omit-files "\\|^\\..+$")) ;; dot-files are omitted
+
+     (setq dired-dwim-target t)
+
+     (require 'dired-details)
+     (setq-default dired-details-hidden-string nil)
+     (dired-details-install)
+
+     ;; Also auto refresh dired, but be quiet about it
+     (setq global-auto-revert-non-file-buffers t)
+     (setq auto-revert-verbose nil)
+
+     (defun open-in-external-app ()
+       "Open the current file or dired marked files in external app."
+       (interactive)
+       (let ( doIt
+              (myFileList
+               (cond
+                ((string-equal major-mode "dired-mode") (dired-get-marked-files))
+                (t (list (buffer-file-name))) ) ) )
+         
+         (setq doIt (if (<= (length myFileList) 5)
+                        t
+                      (y-or-n-p "Open more than 5 files?") ) )
+         
+         (when doIt
+           (cond
+            ((string-equal system-type "windows-nt")
+             (mapc (lambda (fPath) (w32-shell-execute "open" (replace-regexp-in-string "/" "\\" fPath t t)) ) myFileList)
+             )
+            ((string-equal system-type "darwin")
+             (mapc (lambda (fPath) (shell-command (format "open \"%s\"" fPath)) )  myFileList) )
+            ((string-equal system-type "gnu/linux")
+             (mapc (lambda (fPath) (let ((process-connection-type nil)) (start-process "" nil "xdg-open" fPath)) ) myFileList) ) ) ) ) )
+
+     (if system-type 'gnu/linux
+       (progn
+         (require 'openwith)
+         (setq openwith-associations '(("\\.pdf\\'" "zathura" (file))))
+         (setq openwith-associations '(("\\.doc\\'" "libreoffice" (file))))
+         (setq openwith-associations '(("\\.docx\\'" "libreoffice" (file))))     
+         (setq openwith-associations '(("\\.odt\\'" "libreoffice" (file))))     
+         (openwith-mode t)))
+
+     (define-key dired-mode-map (kbd "<C-return>") 'open-in-external-app)
+     (define-key dired-mode-map (kbd "SPC") 'open-in-external-app)
+
+     (eval-after-load "dired-aux"
+       '(add-to-list 'dired-compress-file-suffixes 
+                     '("\\.zip\\'" ".zip" "unzip")))
+   #+end_src
+
+* Menu Leader key
+
+  #+begin_src emacs-lisp
+    (bind-keys :prefix-map menu-prefix-map
+               :prefix "<apps>"
+               ("<apps>" . (lambda () (interactive) (insert "§")))
+               ("0" . delete-window)
+               ("1" . delete-other-windows)
+               ("2" . split-window-below)
+               ("3" . split-window-right)
+               ("w" . ace-window)
+               ("r" . recentf-open-files)
+               ("u" . undo-tree-visualize)
+               ("m" . magit-status)
+               ("n" . neotree-toggle)
+               ("d" . deft)
+               ("s" . sunrise)
+               ("<SPC>" . ace-jump-mode)
+               ("o" . ace-window)
+               ("f" . helm-projectile-find-file)
+               ("i" . (lambda () (interactive) (find-file "~/.emacs.d/evilinit.org"))))
+  #+end_src

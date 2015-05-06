@@ -27,6 +27,7 @@
   - rainbow-mode :: Show colors in buffer when writing e.g. #ffa3f2
   - yafolding :: Fold code blocks
   - wanderlust :: Email
+  - worf :: vi-like keybindings for org-mode
 
   #+begin_src emacs-lisp
     (require 'package)
@@ -44,7 +45,7 @@
                           dired+ dired-details+
                           diminish
                           coffee-mode
-                          evil evil-leader evil-args evil-nerd-commenter evil-surround
+                          evil evil-leader evil-args evil-nerd-commenter evil-surround evil-matchit
                           expand-region
                           flycheck
                           helm helm-projectile
@@ -68,6 +69,7 @@
                           undo-tree
                           wanderlust
                           web-mode
+                          worf
                           yafolding
                           yascroll
                           yasnippet
@@ -567,6 +569,13 @@ When there is a text selection, act on the region."
     (add-to-list 'org-file-apps '("\\.pdf::\\([0-9]+\\)\\'" . "zathura \"%s\" -P %1"))
    #+end_src
 
+** Org contacts
+
+   #+begin_src emacs-lisp
+     (require 'org-contacts)
+     (setq org-contacts-files '("~/org/contacts.org"))
+   #+end_src
+
 ** Capture and refile
 
    #+begin_src emacs-lisp
@@ -589,25 +598,31 @@ When there is a text selection, act on the region."
               "** %? \n\n   %i")
              ("c" "Calendar" entry (file+datetree "~/org/calendar.org")
               "** %? \n\n   %i")
+             ("e" "Contacts" entry (file "~/org/contacts.org")
+              "* %(org-contacts-template-name)
+      :PROPERTIES:
+      :EMAIL: %(org-contacts-template-email)
+      :END:")
+
              ))
 
-     (setq org-refile-targets
-           '(
-             (nil . (:maxlevel . 5))
-             (org-agenda-files . (:maxlevel . 5))
-             ("~/org/someday.org" . (:maxlevel . 1))
-             ))
+          (setq org-refile-targets
+                '(
+                  (nil . (:maxlevel . 5))
+                  (org-agenda-files . (:maxlevel . 5))
+                  ("~/org/someday.org" . (:maxlevel . 1))
+                  ))
 
-     ; Allow refile to create parent tasks with confirmation
-     (setq org-refile-allow-creating-parent-nodes (quote confirm))
+          ; Allow refile to create parent tasks with confirmation
+          (setq org-refile-allow-creating-parent-nodes (quote confirm))
 
-     ;;;; Refile settings
-     ; Exclude DONE state tasks from refile targets
-     (defun bh/verify-refile-target ()
-       "Exclude todo keywords with a done state from refile targets"
-       (not (member (nth 2 (org-heading-components)) org-done-keywords)))
+          ;;;; Refile settings
+          ; Exclude DONE state tasks from refile targets
+          (defun bh/verify-refile-target ()
+            "Exclude todo keywords with a done state from refile targets"
+            (not (member (nth 2 (org-heading-components)) org-done-keywords)))
 
-     (setq org-refile-target-verify-function 'bh/verify-refile-target)
+          (setq org-refile-target-verify-function 'bh/verify-refile-target)
    #+end_src
 
    Command that yanks as an org-mode link
@@ -670,6 +685,7 @@ When there is a text selection, act on the region."
      (find-file "~/org/his.org")
    #+end_src
 
+   
 * LaTeX
 
   #+begin_src emacs-lisp
@@ -1228,52 +1244,24 @@ When there is a text selection, act on the region."
     ;; Make it work with Evil
     (add-hook 'wl-folder-mode-hook 'evil-insert-state)
     (add-hook 'wl-summary-mode-hook 'evil-insert-state)
-
-    ;; ;; BBDB
-
-    ;; (setq mime-bbdb/use-mail-extr nil)
-    ;; (require 'bbdb-wl)
-    ;; (bbdb-wl-setup)
-    ;; (require 'mime-bbdb)
-
-    ;; (autoload 'bbdb         "bbdb-com" "Insidious Big Brother Database" t)
-    ;; (autoload 'bbdb-name    "bbdb-com" "Insidious Big Brother Database" t)
-    ;; (autoload 'bbdb-company "bbdb-com" "Insidious Big Brother Database" t)
-    ;; (autoload 'bbdb-net     "bbdb-com" "Insidious Big Brother Database" t)
-
-    ;; (add-hook 'wl-mail-setup-hook 'bbdb-insinuate-sendmail)
-
-    ;; (setq bbdb-use-alternate-names t)
-
-    ;; (setq bbdb-file "~/.emacs.d/.bbdb") 
-    ;; (setq bbdb/mail-auto-create-p   'bbdb-ignore-some-messages-hook)
-
-    ;; ;; add record to .bbdb manually
-    ;; (setq bbdb-new-nets-always-primary t)
-    ;; (setq bbdb/mail-auto-create-p nil) 
-
-    ;; ;;; height of BBDB's window
-    ;; (setq bbdb-pop-up-target-lines 7)
-
-    ;; ;;; popup display of record in the .bbdb
-    ;; (setq bbdb-use-pop-up t)
-    ;; (setq signature-use-bbdb t)
-    ;; (setq bbdb-north-american-phone-numbers-p nil)
-
-    ;; ;;; automatic adding to ML field
-    ;; (add-hook 'bbdb-notice-hook 'bbdb-auto-notes-hook)
-
-    ;; ;;; hide bbdb field while wl-folder-suspend
-    ;; (defadvice wl-folder-suspend (after wl-bbdb-suspend activate compile)
-    ;;   (interactive)
-    ;; (bbdb-wl-exit-2))
-    ;; (defadvice wl-exit (after wl-bbdb-suspend activate compile)
-    ;;   (interactive)
-    ;; (bbdb-wl-exit-2))
-
-    ;; (put 'ML 'field-separator "\n")
-    ;; (put 'User-Agent 'field-separator "\n")
   #+end_src
+
+* Elfeed
+
+#+begin_src emacs-lisp
+  ;; Load elfeed-org
+  (require 'elfeed-org)
+
+  ;; Initialize elfeed-org
+  ;; This hooks up elfeed-org to read the configuration when elfeed
+  ;; is started with =M-x elfeed=
+  (elfeed-org)
+
+  ;; Optionally specify a number of files containing elfeed
+  ;; configuration. If not set then the location below is used.
+  ;; Note: The customize interface is also supported.
+  (setq rmh-elfeed-org-files (list "~/org/elfeed.org"))
+#+end_src
 * Global shortcuts
 
   Here's the keys that are defined in all modes.

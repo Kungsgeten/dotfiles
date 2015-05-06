@@ -74,4 +74,13 @@
                                scio-student
                                "\\Submission attachment(s)\\"))))
 
+(defun scio-dired-submission-folder ()
+  (interactive)
+  (scio-set-student)
+  (scio-set-folder)
+  (dired-other-window (concat
+                       scio-folder
+                       scio-student
+                       "\\Submission attachment(s)\\")))
+
 (provide 'scio)
