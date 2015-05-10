@@ -21,7 +21,7 @@
   (require 'bind-key)
   (require 'hydra)
   (require 'key-chord)
-  (key-chord-mode)
+  (key-chord-mode +1)
 
   (mapc (lambda (x) (put x 'disabled nil))
         (list 'erase-buffer 'upcase-region 'downcase-region
@@ -381,7 +381,7 @@
     ("y" kill-ring-save "yank" :color blue)
     ("q" nil "quit"))
 
-  (key-chord-define-global "jj" 'hydra-vi/body)
+  ;; (key-chord-define-global "jj" 'hydra-vi/body)
 #+END_SRC
 * use-package
 
